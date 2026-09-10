@@ -1,0 +1,37 @@
+diff --git a/django/db/models/lookups.py b/django/db/models/lookups.py
+index 105dc93251..6d3b0338a3 100644
+--- a/django/db/models/lookups.py
++++ b/django/db/models/lookups.py
+@@ -262,9 +262,14 @@ class Exact(FieldGetDbPrepValueMixin, BuiltinLookup):
+         from django.db.models.sql.query import Query
+         if isinstance(self.rhs, Query):
+             if self.rhs.has_limit_one():
+-                # The subquery must select only the pk.
++                # The subquery must select only the pk. The rewritten select
++                # column is an output constraint of the comparison and must
++                # not be appended to the subquery's GROUP BY, which would
++                # override the grouping established by the query itself
++                # (e.g. values().annotate()).
+                 self.rhs.clear_select_clause()
+                 self.rhs.add_fields(['pk'])
++                self.rhs.suppress_select_in_group_by = True
+             else:
+                 raise ValueError(
+                     'The QuerySet value for an exact lookup must be limited to '
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index e287a6f55a..7845af3e35 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -108,6 +108,12 @@ class SQLCompiler:
+         # set to group by. So, we need to add cols in select, order_by, and
+         # having into the select in any case.
+         for expr, _, _ in select:
++            if getattr(self.query, 'suppress_select_in_group_by', False):
++                # SELECT columns rewritten for a lookup constraint (e.g. the
++                # pk of an exact lookup against a sliced queryset) are output
++                # constraints; appending them to GROUP BY would override the
++                # grouping established by the query itself.
++                continue
+             cols = expr.get_group_by_cols()
+             for col in cols:
+                 expressions.append(col)

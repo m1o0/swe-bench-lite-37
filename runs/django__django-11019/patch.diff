@@ -1,0 +1,142 @@
+diff --git a/django/forms/widgets.py b/django/forms/widgets.py
+index 02aa32b207..73cd7b7399 100644
+--- a/django/forms/widgets.py
++++ b/django/forms/widgets.py
+@@ -61,20 +61,34 @@ class Media:
+     def _css(self):
+         css = self._css_lists[0]
+         # filter(None, ...) avoids calling merge with empty dicts.
+-        for obj in filter(None, self._css_lists[1:]):
+-            css = {
+-                medium: self.merge(css.get(medium, []), obj.get(medium, []))
+-                for medium in css.keys() | obj.keys()
+-            }
+-        return css
++        css_lists = list(filter(None, self._css_lists[1:]))
++        if not css_lists:
++            return css
++        # Collect the lists of files of each media type, in order of first
++        # appearance, before merging the definitions of each type together in
++        # one go. Merging all of the definitions at once avoids imposing an
++        # arbitrary order on independent files, which could conflict with the
++        # order required by later definitions.
++        media_lists = {}
++        for media_definition in [css, *css_lists]:
++            for medium, paths in media_definition.items():
++                media_lists.setdefault(medium, []).append(paths)
++        return {
++            medium: self.merge(*paths_lists)
++            for medium, paths_lists in media_lists.items()
++        }
+ 
+     @property
+     def _js(self):
+         js = self._js_lists[0]
+         # filter(None, ...) avoids calling merge() with empty lists.
+-        for obj in filter(None, self._js_lists[1:]):
+-            js = self.merge(js, obj)
+-        return js
++        js_lists = list(filter(None, self._js_lists[1:]))
++        if not js_lists:
++            return js
++        # Merge all of the definitions at once to avoid imposing an arbitrary
++        # order on independent files, which could conflict with the order
++        # required by later definitions.
++        return self.merge(js, *js_lists)
+ 
+     def render(self):
+         return mark_safe('\n'.join(chain.from_iterable(getattr(self, 'render_' + name)() for name in MEDIA_TYPES)))
+@@ -115,38 +129,68 @@ class Media:
+         raise KeyError('Unknown media type "%s"' % name)
+ 
+     @staticmethod
+-    def merge(list_1, list_2):
++    def merge(*lists):
+         """
+-        Merge two lists while trying to keep the relative order of the elements.
+-        Warn if the lists have the same two elements in a different relative
+-        order.
++        Merge an arbitrary number of lists while trying to keep the relative
++        order of the elements. Warn if the lists have the same two elements in
++        a different relative order.
+ 
+         For static assets it can be important to have them included in the DOM
+         in a certain order. In JavaScript you may not be able to reference a
+         global or in CSS you might want to override a style.
+         """
+-        # Start with a copy of list_1.
+-        combined_list = list(list_1)
+-        last_insert_index = len(list_1)
+-        # Walk list_2 in reverse, inserting each element into combined_list if
+-        # it doesn't already exist.
+-        for path in reversed(list_2):
+-            try:
+-                # Does path already exist in the list?
+-                index = combined_list.index(path)
+-            except ValueError:
+-                # Add path to combined_list since it doesn't exist.
+-                combined_list.insert(last_insert_index, path)
++        # Build a graph of the dependencies between the elements: an edge from
++        # ``before`` to ``after`` records that ``before`` is defined before
++        # ``after`` in one of the lists and should be included before it as
++        # well. Only consecutive elements are considered since the relation is
++        # transitive. The position of the first appearance of each element is
++        # remembered to break ties when several elements are available for
++        # inclusion at the same time.
++        dependency_graph = {}
++        first_appearance = {}
++        sentinel = object()
++        for list_index, list_ in enumerate(lists):
++            previous = sentinel
++            seen = set()
++            for position, element in enumerate(list_):
++                if element in seen:
++                    # Duplicated elements within a single list don't impose an
++                    # order on the other elements.
++                    continue
++                seen.add(element)
++                first_appearance.setdefault(element, (list_index, position))
++                dependencies = dependency_graph.setdefault(element, set())
++                if previous is not sentinel:
++                    dependencies.add(previous)
++                previous = element
++        # Include an element as soon as all of the elements it depends on are
++        # included, preferring the element that appeared first when several
++        # elements are available. If no element is available, the remaining
++        # elements are cyclically dependent: warn about the opposite order and
++        # forcefully include the element that appeared first to break the
++        # cycle.
++        combined_list = []
++        remaining = set(dependency_graph)
++        while remaining:
++            available = [
++                element for element in remaining
++                if dependency_graph[element].isdisjoint(remaining)
++            ]
++            if available:
++                element = min(available, key=first_appearance.__getitem__)
+             else:
+-                if index > last_insert_index:
+-                    warnings.warn(
+-                        'Detected duplicate Media files in an opposite order:\n'
+-                        '%s\n%s' % (combined_list[last_insert_index], combined_list[index]),
+-                        MediaOrderConflictWarning,
+-                    )
+-                # path already exists in the list. Update last_insert_index so
+-                # that the following elements are inserted in front of this one.
+-                last_insert_index = index
++                element = min(remaining, key=first_appearance.__getitem__)
++                blocking = min(
++                    dependency_graph[element] & remaining,
++                    key=first_appearance.__getitem__,
++                )
++                warnings.warn(
++                    'Detected duplicate Media files in an opposite order:\n'
++                    '%s\n%s' % (element, blocking),
++                    MediaOrderConflictWarning,
++                )
++            combined_list.append(element)
++            remaining.remove(element)
+         return combined_list
+ 
+     def __add__(self, other):

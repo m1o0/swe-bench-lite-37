@@ -1,0 +1,66 @@
+NOTICE — third-party material and attribution
+=============================================
+
+This repository contains the results of an experiment *on* SWE-bench Lite. It does
+not redistribute the SWE-bench dataset itself.
+
+1. SWE-bench (benchmark, dataset, harness)
+   - Project:  https://github.com/SWE-bench/SWE-bench
+   - Package:  `swebench` (used here at version 5.0.2)
+   - Licence:  MIT
+   - Used for: the instance list, the hidden tests used for grading, and the official
+     evaluation harness.
+   - Note: `logs/**/eval.sh` embeds the per-instance test patch that the harness applies
+     before running the hidden tests. That test patch originates from the SWE-bench
+     dataset (MIT) and is reproduced here only as evaluation evidence. If you reuse it,
+     keep this attribution.
+
+2. Upstream repositories the patches touch
+   - django/django        — BSD-3-Clause
+   - pylint-dev/pylint    — GPL-2.0
+   - pytest-dev/pytest    — MIT
+   Files under `runs/*/patch.diff` are unified diffs (context lines plus small changes)
+   against those projects; `logs/**/eval.sh` and `test_output.txt` quote test code from
+   them. Those excerpts remain under their original licences.
+
+3. Models / clients
+   - Patches and write-ups in `runs/` were produced with a GLM-family model through the ZCode
+     client, under the account limits described in `RESULTS.md`.
+   - **AI-generated content labelling.** 《人工智能生成合成内容标识办法》 requires published or
+     distributed AI-generated content to be conspicuously labelled. This repository carries that
+     label at the top of `README.md`; keep it there if you fork or mirror the content.
+   - **Relevant ZCode terms** (ZCode 用户协议, https://zcode.z.ai/cn/terms, version dated
+     2026-06-15) — quoted for the reader's convenience, not as legal advice:
+     * 6.2: unless otherwise agreed, or unless a paid subscription for the corresponding service
+       is active, ZCode and its generated content may be used only in a **non-commercial,
+       personal research/study** manner.
+     * 6.5: within the limits of applicable law, **the user holds the IP in the generated content**,
+       and the user handles IP questions at their own risk.
+     * 4.3: the user must not use ZCode to develop/train/improve competing algorithms or models,
+       and must not use it to infringe third-party rights.
+     * 4.4 / 9.x: no warranty is given as to the accuracy, legality, safety or non-infringement of
+       generated deliverables.
+     If you intend to use this material commercially, re-read those clauses and your own
+     subscription terms first.
+
+4. Licence scope, per file
+   - `runs/*/patch.diff` and `logs/**/eval.sh` touch upstream source code, so those diffs and
+     quotations stay under the licence of the file they modify:
+     * pylint-dev/pylint — GPL-2.0 (the pylint patches are distributed under GPL-2.0, not MIT);
+     * django/django — BSD-3-Clause;
+     * pytest-dev/pytest — MIT.
+   - The MIT licence in `LICENSE` covers the original additions only: the write-ups, the analysis
+     scripts, the reports, and the organisation of the evidence.
+   - `logs/**/eval.sh` additionally embeds the per-instance test patch from the SWE-bench dataset
+     (MIT), reproduced as evaluation evidence with attribution.
+
+5. Evaluated image builds
+   - Docker images named `swebench/sweb.eval.x86_64.<instance>:latest` were pulled and used
+     only as evaluation environments. Their `RepoDigests` are recorded in
+     `MANIFEST_v1.json` so the exact environments can be identified.
+
+6. Dataset provenance recorded for verification
+   - Dataset name/split: SWE-bench/SWE-bench_Lite, split = test
+   - Local parquet SHA-256: see `MANIFEST_v1.json` → `dataset.sha256`
+   - The parquet file itself is intentionally NOT committed here; download it from the
+     official source and verify the hash.

@@ -1,0 +1,789 @@
+{
+  "manifest_version": 1,
+  "frozen_label": "v1-blind-write",
+  "generated_at": "2026-09-10T21:21:55+0800",
+  "run_id": "tonight",
+  "model_name_or_path": "glm-5.3-zcode-campaign",
+  "run_command": "HF_ENDPOINT=https://hf-mirror.com python3 -m swebench.harness.run_evaluation -d SWE-bench/SWE-bench_Lite -s test -p predictions_swebench.jsonl -id tonight --max_workers 4",
+  "scope": {
+    "declared_instances": 37,
+    "excluded_out_of_scope": [
+      "django__django-12747"
+    ]
+  },
+  "dataset": {
+    "name": "SWE-bench/SWE-bench_Lite",
+    "split": "test",
+    "local_parquet": "data\\swebench_lite_test.parquet",
+    "sha256": "7a21f37b8bc179c7db5beeb14e88ac538ba283455c776e6b2535bbfb6e3551b4",
+    "hf_endpoint": "https://hf-mirror.com"
+  },
+  "environment": {
+    "host_os": "Windows-11-10.0.26200-SP0",
+    "wsl_distro": "Ubuntu-22.04",
+    "wsl_kernel": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "swebench_version": "5.0.2",
+    "docker_server_version": "29.8.0",
+    "registry_mirrors": [
+      "https://docker.m.daocloud.io",
+      "https://docker.1ms.run"
+    ],
+    "dockerd_proxy_note": "registry-1.docker.io is unreachable from the WSL NAT network; dockerd runs with an HTTP(S) proxy pointing at the Windows-side forwarder tools/port_forward.py (0.0.0.0:7898 -> 127.0.0.1:7897) so the registry mirror fallback chain can reach Docker Hub."
+  },
+  "artifacts": {
+    "predictions.jsonl": "32db14debd41287340b142abedba4ca48c7079ece860b356fdd587b24d1e0241",
+    "predictions_swebench.jsonl": "2a337f03ba8bd2bf9f209b1f66f8579426c86971ad1fc20d43a8c638e7098bb4",
+    "harness_summary_report": "034fef34983c00e98387442ff537844cb8fbf15a10f620d3a7846e505b238399"
+  },
+  "instances": [
+    {
+      "instance_id": "django__django-10914",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "c6c663d0a033aafc9ef7c49c585628a32f64d64b777e29c7a667dea5451a5181",
+        "runs_summary.md": "a5d60e12c978d6ba9e57e7b7d87d26afcd8921dbe3bcfa42570437eeb8da077a",
+        "runs_verify.py": null,
+        "predictions.patch": "c6c663d0a033aafc9ef7c49c585628a32f64d64b777e29c7a667dea5451a5181",
+        "predictions_swebench.model_patch": "c6c663d0a033aafc9ef7c49c585628a32f64d64b777e29c7a667dea5451a5181",
+        "harness_report.json": "4d36aa9e74a88a5b3d913d0197d36c97800324a727aaef672fa758bafc7595b4",
+        "harness_test_output.txt": "1f91b0242baf63c3ed463e418f93916d286ee9daa5f8d727ddcfec695ebfeefd"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-10914:latest"
+    },
+    {
+      "instance_id": "django__django-10924",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "66515cf99c1508c1d99e66ff80e3731ed1790ec039346f6729be1f93135dfec2",
+        "runs_summary.md": "6871a8ed99acd40cb670ce6ec4954a555b78b5206d61ee006ea3f5d474a4ae7b",
+        "runs_verify.py": "afea75ff7dccd4a8e9da478d60e00e007c5570cea7d052b57d87f7c1f8281b63",
+        "predictions.patch": "66515cf99c1508c1d99e66ff80e3731ed1790ec039346f6729be1f93135dfec2",
+        "predictions_swebench.model_patch": "66515cf99c1508c1d99e66ff80e3731ed1790ec039346f6729be1f93135dfec2",
+        "harness_report.json": "9f8de0075de1768a736062f3919519a2a0a32033d01e5c500e9795efb066d93b",
+        "harness_test_output.txt": "2d45ffbb82508014af48150a179e43d10032eb5350c8afe54cf5c78c4e495cc2"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-10924:latest"
+    },
+    {
+      "instance_id": "django__django-11001",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "25d5ebcd1c78e8ebc147628cd15043059f104f3a9ce996a9d79e059becee3aab",
+        "runs_summary.md": "67a634fe372ef490afd4d51adf0ab071c599e5838b2d04005782343f4ff5d4ec",
+        "runs_verify.py": null,
+        "predictions.patch": "25d5ebcd1c78e8ebc147628cd15043059f104f3a9ce996a9d79e059becee3aab",
+        "predictions_swebench.model_patch": "25d5ebcd1c78e8ebc147628cd15043059f104f3a9ce996a9d79e059becee3aab",
+        "harness_report.json": "49b83db5416c8736a3c4b0230ab20e647b7b52dd4ba7cd06a619098855199eae",
+        "harness_test_output.txt": "963c241620bc367305b55c3848b361187f1548f1187459aae481edafee16dff5"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11001:latest"
+    },
+    {
+      "instance_id": "django__django-11019",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "d0e61122620494b723e832411b237313c234360b734d1384918a076ec7bc6655",
+        "runs_summary.md": "90f322bac6f241bcb409ff018e5d5c0838e23c9bb1318c5e4bd7ea9ed9f5090a",
+        "runs_verify.py": "b9744788b17b79f2a35092a0fa8eaedea5ed223571350bf38d85824925ae9f6d",
+        "predictions.patch": "d0e61122620494b723e832411b237313c234360b734d1384918a076ec7bc6655",
+        "predictions_swebench.model_patch": "d0e61122620494b723e832411b237313c234360b734d1384918a076ec7bc6655",
+        "harness_report.json": "cacd9c4c00b6010b118b84d11d9b6138b359f9320f773be1ce73363284c28a08",
+        "harness_test_output.txt": "7268045ae86203f29a6b9c49cfacac2aa1edf70e625fbdf37014407c6c3e6e22"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11019:latest"
+    },
+    {
+      "instance_id": "django__django-11039",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "be63da2d5063a5602d129c5dd217fe975a5d1325daac155f45201d70962d8c77",
+        "runs_summary.md": "04d2c69839afab6d15e1caeda53c7e8684efef4e437c0623d85ce4fd5e498764",
+        "runs_verify.py": null,
+        "predictions.patch": "be63da2d5063a5602d129c5dd217fe975a5d1325daac155f45201d70962d8c77",
+        "predictions_swebench.model_patch": "be63da2d5063a5602d129c5dd217fe975a5d1325daac155f45201d70962d8c77",
+        "harness_report.json": "cd1de15e1d945ec5c1499a93b62f958bec721501a623ce91d4079e36700a9f5c",
+        "harness_test_output.txt": "aad357b7a5daaa3f4322b26151678e79c467eae1b6093d0108890aa88f214e3b"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11039:latest"
+    },
+    {
+      "instance_id": "django__django-11049",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "d4c92e54ed156af7ea9b59be35e77d3521594cec9a892581ae69bbbfae088af4",
+        "runs_summary.md": "e34bae66b323d62e371e7926f5d6f79a72270560a5e3bd938454d9f90507dd1a",
+        "runs_verify.py": null,
+        "predictions.patch": "d4c92e54ed156af7ea9b59be35e77d3521594cec9a892581ae69bbbfae088af4",
+        "predictions_swebench.model_patch": "d4c92e54ed156af7ea9b59be35e77d3521594cec9a892581ae69bbbfae088af4",
+        "harness_report.json": "4534ad31aa34e4d486bdcb1e7cb565fa89b1d8d27bcc504ff9e72bd003b169af",
+        "harness_test_output.txt": "5bffafddd14085ecad419dcf3df38354aa870fb943d9b784f3ef22a0398fba3a"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11049:latest"
+    },
+    {
+      "instance_id": "django__django-11099",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "dcd7202d62b786de764d90d5793d4d1d2f531486e1bd4f2c0b7bf5507a82163d",
+        "runs_summary.md": "1acb21c506ea6cc2d3ae542ecf81daae576d174db5cba4bd364219ea3d9d7b3e",
+        "runs_verify.py": "19ebb7589a841e4c59e3550b0a94a77fbb34fc4f78a3d9957841cd7266725fdf",
+        "predictions.patch": "dcd7202d62b786de764d90d5793d4d1d2f531486e1bd4f2c0b7bf5507a82163d",
+        "predictions_swebench.model_patch": "dcd7202d62b786de764d90d5793d4d1d2f531486e1bd4f2c0b7bf5507a82163d",
+        "harness_report.json": "783e252651c6cc7cc963c7673895cd27c265b2720927d04893f3de55773a4dd7",
+        "harness_test_output.txt": "eb051a312b2d2164b15dbcaa63f60e8b12cd44497cf9541e0723d2bc1d730936"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11099:latest"
+    },
+    {
+      "instance_id": "django__django-11133",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "8007c04b626293e128c2b76e5c544ddc8103836d1d8785d8eee87889e7cb867d",
+        "runs_summary.md": "528603e10836384e034cb96136a0b364b76cd96308b14530849126af8fe19dd5",
+        "runs_verify.py": null,
+        "predictions.patch": "8007c04b626293e128c2b76e5c544ddc8103836d1d8785d8eee87889e7cb867d",
+        "predictions_swebench.model_patch": "8007c04b626293e128c2b76e5c544ddc8103836d1d8785d8eee87889e7cb867d",
+        "harness_report.json": "5a154c5b691830db51e1c85429fead2cbcb177c3c9116c852aa8b661d4e3e43f",
+        "harness_test_output.txt": "71efeee2177b187e46014ff95b028c569ef8687951ad38f0588210b2feb064d8"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11133:latest"
+    },
+    {
+      "instance_id": "django__django-11179",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "b9011c1b8ba40b3e480bf2b1831ba88654a2ea67d63822650ce92b64b03e91d8",
+        "runs_summary.md": "bcbe7d51632e008b760cce97367c56a60fe0175f2105bfd2765ccbb27b58b8bb",
+        "runs_verify.py": null,
+        "predictions.patch": "b9011c1b8ba40b3e480bf2b1831ba88654a2ea67d63822650ce92b64b03e91d8",
+        "predictions_swebench.model_patch": "b9011c1b8ba40b3e480bf2b1831ba88654a2ea67d63822650ce92b64b03e91d8",
+        "harness_report.json": "260090955e844ae6fc34e005d62246dfa0d46d03439eb8b13645b7ef110e9f9c",
+        "harness_test_output.txt": "12a6989ac94a43da45b3ae98aa46b86957af61d44e0ab1df4384831b4c3028c3"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11179:latest"
+    },
+    {
+      "instance_id": "django__django-11283",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "c05c1fdb69697cd57dde630f64047dd96f81b04681279dc9e07e6b4edc00b746",
+        "runs_summary.md": "3aae22735025ced57a137037275129cf18202fe4496f95a1a5d6ebb6e8eda304",
+        "runs_verify.py": null,
+        "predictions.patch": "c05c1fdb69697cd57dde630f64047dd96f81b04681279dc9e07e6b4edc00b746",
+        "predictions_swebench.model_patch": "c05c1fdb69697cd57dde630f64047dd96f81b04681279dc9e07e6b4edc00b746",
+        "harness_report.json": "9f7c490eacf9ca6fccbc53f34d3e50327f8540a7809ee0d68be9466e12f56f51",
+        "harness_test_output.txt": "4b543f0c5e79c09ca2a0054ef9262fa8d8f5ab9fb1f64241a7c823d5ad7f8add"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11283:latest"
+    },
+    {
+      "instance_id": "django__django-11422",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "6ef55aebd5cb8159c73380b23627a89f5906b39c140cc538ef85919660f7ad6d",
+        "runs_summary.md": "ecfb141ecdc9e8063e7efae27b528d0b4b38be91747cb0aa02fb765c4081163a",
+        "runs_verify.py": "cb2c782b0327d90cdd296f007a0459676c5639095f6799814ad9edbcc404bace",
+        "predictions.patch": "6ef55aebd5cb8159c73380b23627a89f5906b39c140cc538ef85919660f7ad6d",
+        "predictions_swebench.model_patch": "6ef55aebd5cb8159c73380b23627a89f5906b39c140cc538ef85919660f7ad6d",
+        "harness_report.json": "c6aa33188667745a180d942ccec76a405ae0508f6d80f50859f60349ef1f6cd0",
+        "harness_test_output.txt": "7d68904fd61f25c8aea0feddcf0d67e53d243faaa03c6cd2c17c245a54ad8788"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11422:latest"
+    },
+    {
+      "instance_id": "django__django-11564",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "3f5a740e36fb8a2128bb5aed68b7b6d4ec4ecc842f9216cddc45c289f8fd67da",
+        "runs_summary.md": "2a0e48b290648a5faea680c87417ddbc6826c21e5640c1c6ddaecc91b8a4a0c8",
+        "runs_verify.py": "b522690cf12608682b384ec63c401db7ee71af53c1091f8882816da7b487e189",
+        "predictions.patch": "3f5a740e36fb8a2128bb5aed68b7b6d4ec4ecc842f9216cddc45c289f8fd67da",
+        "predictions_swebench.model_patch": "3f5a740e36fb8a2128bb5aed68b7b6d4ec4ecc842f9216cddc45c289f8fd67da",
+        "harness_report.json": "35dd155f03f201b5133e30ca4289357b29dd8871807b8bad93e84adcb5baa553",
+        "harness_test_output.txt": "65f81e3bc3fc0dee3fb7cdf94aa85ecfa15c76e80573ec7842015dee55e3f514"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11564:latest"
+    },
+    {
+      "instance_id": "django__django-11583",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "a9b7efd0075c46f9e6fd3855441bbc92ef9b21a0cb4f0c0f53718b1bb462e0bf",
+        "runs_summary.md": "5f76347a762117ed03461704936835f0c7d18bf1d4e1c2e158d4604e3ffc4efc",
+        "runs_verify.py": "ff31316deb0715408b10b6a99ff13691416f91ddba64278a4bff45c5ac137931",
+        "predictions.patch": "a9b7efd0075c46f9e6fd3855441bbc92ef9b21a0cb4f0c0f53718b1bb462e0bf",
+        "predictions_swebench.model_patch": "a9b7efd0075c46f9e6fd3855441bbc92ef9b21a0cb4f0c0f53718b1bb462e0bf",
+        "harness_report.json": "1742b822f1aa8e464bca609baa006ef58dbb2e35ce0b8d5ccb6b780b79f6f873",
+        "harness_test_output.txt": "1eb5c2f320920c043acd6289ebfaab268475072d31b36e7453c0c5c80359445b"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11583:latest"
+    },
+    {
+      "instance_id": "django__django-11620",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "8d95c297b27057a91efc8570cff934f229e2b4a6373dcfd5669869d30c35da90",
+        "runs_summary.md": "338ff318b840bf839f96cd463759f996ce722e1655e2e88fc34d39c8bb8c6a7c",
+        "runs_verify.py": null,
+        "predictions.patch": "8d95c297b27057a91efc8570cff934f229e2b4a6373dcfd5669869d30c35da90",
+        "predictions_swebench.model_patch": "8d95c297b27057a91efc8570cff934f229e2b4a6373dcfd5669869d30c35da90",
+        "harness_report.json": "6ea493dd89c8b6d693bdd3c3fc2c2a772cec2254af8378c790408983944343b5",
+        "harness_test_output.txt": "feffb770ea3661651564dc077d6a031dbcc3d550e6c543560f07fc35bc1ef941"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11620:latest"
+    },
+    {
+      "instance_id": "django__django-11630",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "ca4012ab2122f85fc338e1b0d43c16ceeacbdedb632f242de5cd8b91999484cf",
+        "runs_summary.md": "ca36a0ae269b810cf1bd3b97922ab96ef64a3adca6f63561af672ac4d681c582",
+        "runs_verify.py": "001f1011d8fd46145654608daa807db83823aa6b67e89826ba54758af4d17d36",
+        "predictions.patch": "ca4012ab2122f85fc338e1b0d43c16ceeacbdedb632f242de5cd8b91999484cf",
+        "predictions_swebench.model_patch": "ca4012ab2122f85fc338e1b0d43c16ceeacbdedb632f242de5cd8b91999484cf",
+        "harness_report.json": "e6abdd91b3384038e4e32d3aa3b15179ba22d9640b5eead84e801c5481c2d78f",
+        "harness_test_output.txt": "725e4998d0037cc6526e58de3fcfdb96df57d7a3190c737b276d3a75960fef32"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11630:latest"
+    },
+    {
+      "instance_id": "django__django-11742",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "59c23ab31d5448c3840e813b9225d40d12a6445be51405e4877736a2edaca6cd",
+        "runs_summary.md": "8a08c02da020092a60b3387649ae841b1a17e7cef83e311f0a9e916f5eaec900",
+        "runs_verify.py": "925b9d360ce47daf400a8e6cff4f191a2b8bcc8b30c155da1e54bef6cc8deebd",
+        "predictions.patch": "59c23ab31d5448c3840e813b9225d40d12a6445be51405e4877736a2edaca6cd",
+        "predictions_swebench.model_patch": "59c23ab31d5448c3840e813b9225d40d12a6445be51405e4877736a2edaca6cd",
+        "harness_report.json": "06754e0d8af0c161c82299922582f672b80f07481ee096ed065df532c7348900",
+        "harness_test_output.txt": "7b07d59d82e26580502c6bfa64ba2fddcb7e10b8220624fbf8a5e8956688aabf"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11742:latest"
+    },
+    {
+      "instance_id": "django__django-11797",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "9cdcd76068e2908f37f58a9b60118384282ada6258f10d97726bd80aefb422ff",
+        "runs_summary.md": "e95c5514843e1116f7f254537329bb1d77fba8da9c69e274cc3d50fc8e0fce7c",
+        "runs_verify.py": null,
+        "predictions.patch": "9cdcd76068e2908f37f58a9b60118384282ada6258f10d97726bd80aefb422ff",
+        "predictions_swebench.model_patch": "9cdcd76068e2908f37f58a9b60118384282ada6258f10d97726bd80aefb422ff",
+        "harness_report.json": "fc1dedc5bca643ce318827606382c6ac464353a3497b78c5700456c1c2b17dfc",
+        "harness_test_output.txt": "9d774588bb40ab823b6472e84887ba684d88afda643096b4d3f9c5c035e91691"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11797:latest"
+    },
+    {
+      "instance_id": "django__django-11999",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "a2194877702509abea0d183f5eee1acdb95c70aba59144c9ea20b34c2c5471c5",
+        "runs_summary.md": "6a4302f9c53ce94b7b33a016893b86fb0c52903343afab37e662abe6d07a8bec",
+        "runs_verify.py": null,
+        "predictions.patch": "a2194877702509abea0d183f5eee1acdb95c70aba59144c9ea20b34c2c5471c5",
+        "predictions_swebench.model_patch": "a2194877702509abea0d183f5eee1acdb95c70aba59144c9ea20b34c2c5471c5",
+        "harness_report.json": "a184f919d25dd01d13c03a8b300e3537ff8fc4491d1458c34d3ee61cc73c24b4",
+        "harness_test_output.txt": "fc314852eca03647d73ce82fb43d59dfbd35d94859673afeac9cc1ad5b0c0469"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-11999:latest"
+    },
+    {
+      "instance_id": "django__django-12125",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "14f76a9b1191174fb2810713bbff94257b9c55fef5e16c31f888f87cf612642b",
+        "runs_summary.md": "69a40ed2ec2358c200f4f5955b6ce6c0727919b3fb17667f393526698e68d37a",
+        "runs_verify.py": "458de9c3e246cb7f967a3cb2db412e87cf69a7b1e775a2434725e54ccb471a58",
+        "predictions.patch": "14f76a9b1191174fb2810713bbff94257b9c55fef5e16c31f888f87cf612642b",
+        "predictions_swebench.model_patch": "14f76a9b1191174fb2810713bbff94257b9c55fef5e16c31f888f87cf612642b",
+        "harness_report.json": "6b81f7254ada2fc441ce41db5fecd833e0e09f2ac5bd00ef0dc83ac1b9d11228",
+        "harness_test_output.txt": "317942f4a9b9bd77bea7e873e2c0305a0eeea650fed9e84ab8f701d53019dacd"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12125:latest"
+    },
+    {
+      "instance_id": "django__django-12184",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "674ed411740d281af1791d40a845f5d60644c0e4f29f3410f27d2f33c546d861",
+        "runs_summary.md": "ef5c92d77868ea132b78fc88f49fd2bfb4f5efd2829899a1a7569d48b23d70a3",
+        "runs_verify.py": "d1b6a98493f2a58fcb09b37d2048f865b2c99938de43687f20a1695382b583be",
+        "predictions.patch": "674ed411740d281af1791d40a845f5d60644c0e4f29f3410f27d2f33c546d861",
+        "predictions_swebench.model_patch": "674ed411740d281af1791d40a845f5d60644c0e4f29f3410f27d2f33c546d861",
+        "harness_report.json": "0ba39434768bfa1ec26399e433e0b7109854960450295c310578cbccfbddb9fb",
+        "harness_test_output.txt": "ff033e179fe2e98721bf98fa51b37fca660aebbb254a9965d68acfbd65cd1e59"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12184:latest"
+    },
+    {
+      "instance_id": "django__django-12284",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "1a654d8f20f64829ae7e1775fa6ac388a33fcfa63f8b4615a2f9713d64f90137",
+        "runs_summary.md": "1aa56caf866b772c1b6efeca39658cf3a7901373e0128c263c5390ad013c2791",
+        "runs_verify.py": null,
+        "predictions.patch": "1a654d8f20f64829ae7e1775fa6ac388a33fcfa63f8b4615a2f9713d64f90137",
+        "predictions_swebench.model_patch": "1a654d8f20f64829ae7e1775fa6ac388a33fcfa63f8b4615a2f9713d64f90137",
+        "harness_report.json": "ecc10c0794577c24e9a309b8f5eb0ef9a6327feb681cd968bf5b1d9c722d790a",
+        "harness_test_output.txt": "db03e3296943a4fbfb18c43b4e10a596285de3c5d2add7b990340f0287bcbb83"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12284:latest"
+    },
+    {
+      "instance_id": "django__django-12286",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "1f004134e7ef980c03cca04d2d591a0eb1d05f78ff516e51f0b6fcb52d36abed",
+        "runs_summary.md": "efb419920c651a2a489d07e35ef134d24176786b4565dd2f1d9c09e884306e41",
+        "runs_verify.py": "e03a0db1bce04b45a96162b26fe35e056253c98fe4bb582e736dab981689aff5",
+        "predictions.patch": "1f004134e7ef980c03cca04d2d591a0eb1d05f78ff516e51f0b6fcb52d36abed",
+        "predictions_swebench.model_patch": "1f004134e7ef980c03cca04d2d591a0eb1d05f78ff516e51f0b6fcb52d36abed",
+        "harness_report.json": "3f7580ec828a828d9c65ba7ed75aeaff69936f8b677acb340bd5ca9f60f56a87",
+        "harness_test_output.txt": "55495abdc07b794c50b4186be18ac884c8a4f2c37049abdffbfc55d2c7bed9dd"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12286:latest"
+    },
+    {
+      "instance_id": "django__django-12308",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "f577cbc106247b49d5a197655f47f446403d3f81990fc17719f58ddcd51b0275",
+        "runs_summary.md": "15f484af76e5a21d25ecfe1bb6d5c1230303303c1a2b7df5594af3ef102d81dd",
+        "runs_verify.py": "9d16d259196026617be11fbc3b7a23f0429fc8313e8630222c874a21b30e19a4",
+        "predictions.patch": "f577cbc106247b49d5a197655f47f446403d3f81990fc17719f58ddcd51b0275",
+        "predictions_swebench.model_patch": "f577cbc106247b49d5a197655f47f446403d3f81990fc17719f58ddcd51b0275",
+        "harness_report.json": "53a7f39dfef0a6ccbbd3ed8abfde580aeef9bc03945382f548df2b4f53002386",
+        "harness_test_output.txt": "172c9063e0a09fc0f9cdd141dce3e1e90e1790b0a2d9643524512cce21dd8360"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12308:latest"
+    },
+    {
+      "instance_id": "django__django-12453",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "c92d181d3766cd371d03063bc1bc65b74a1d3e69a0646e9a1c3b9520df31afcc",
+        "runs_summary.md": "979b747dcac4704123fc7f712c3526ab80807904245c93f06956f3896238d7e1",
+        "runs_verify.py": "ecb2a22736ef51de80a04df9c65b8fffbc8d5e3ba12d383adf77972b27d06526",
+        "predictions.patch": "c92d181d3766cd371d03063bc1bc65b74a1d3e69a0646e9a1c3b9520df31afcc",
+        "predictions_swebench.model_patch": "c92d181d3766cd371d03063bc1bc65b74a1d3e69a0646e9a1c3b9520df31afcc",
+        "harness_report.json": "ba38eb1c3953a09be14a436b6bcd50c53d57c36815639f90ff7e36ee4e911edd",
+        "harness_test_output.txt": "11ccc2de5f5b36ccb6a5938c3505a597c5ddd5acc6e8ede9adec6fcc001a30b0"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12453:latest"
+    },
+    {
+      "instance_id": "django__django-12470",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "8c53871d7122626766550dd8b3d624ce10692141f435031b57c1b8e3f0aeeb51",
+        "runs_summary.md": "80ef9416e8f061e9dd4369e0a88e6e2764cfe515885117b32da694a3ef6610b8",
+        "runs_verify.py": null,
+        "predictions.patch": "8c53871d7122626766550dd8b3d624ce10692141f435031b57c1b8e3f0aeeb51",
+        "predictions_swebench.model_patch": "8c53871d7122626766550dd8b3d624ce10692141f435031b57c1b8e3f0aeeb51",
+        "harness_report.json": "2fde2ed7c3a9c18da897aa601b5be220981962c3cf35c74417616dcc86b567f5",
+        "harness_test_output.txt": "b44a761e1cba8529f866e927f230dbe1d41c3cec6ba10d47eda8442b9a7d7ec3"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12470:latest"
+    },
+    {
+      "instance_id": "django__django-12497",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "f97a720e00a4c1f1f36d8c84fc385a08b53cea66b4489afd5eddb4815988d277",
+        "runs_summary.md": "0b799d16c9b5ede63a6f64fbd08bf6b0893d4d5ed4c930256687650fe9f01702",
+        "runs_verify.py": null,
+        "predictions.patch": "f97a720e00a4c1f1f36d8c84fc385a08b53cea66b4489afd5eddb4815988d277",
+        "predictions_swebench.model_patch": "f97a720e00a4c1f1f36d8c84fc385a08b53cea66b4489afd5eddb4815988d277",
+        "harness_report.json": "2a2db0337d3b4820d7b58bf090c7d1d454d69e6c6fdc919dcb39cc229b1b77c4",
+        "harness_test_output.txt": "11b855f252fbce678a80e686967cd81a1aaac6008dd98d38e695a24873c0ce87"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12497:latest"
+    },
+    {
+      "instance_id": "django__django-12589",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "29259a0d1f7293dbc31807295914acdf57b754532a3a088a08cec7e7aa710fe9",
+        "runs_summary.md": "6501a96b5d96c7c5f9f6b90d62f03caec1ddff22b45257bd9f1bde408ca08d2a",
+        "runs_verify.py": null,
+        "predictions.patch": "29259a0d1f7293dbc31807295914acdf57b754532a3a088a08cec7e7aa710fe9",
+        "predictions_swebench.model_patch": "29259a0d1f7293dbc31807295914acdf57b754532a3a088a08cec7e7aa710fe9",
+        "harness_report.json": "4538385fb47d686b870effbb61e7470dfa4319bb9bde393acccf57f57cdb53c6",
+        "harness_test_output.txt": "fd9a09be008fd262e8f7054ec5b0a4adc691081424843db357280256849f478e"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12589:latest"
+    },
+    {
+      "instance_id": "django__django-12700",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "82993b2c58e0e4cc5ebc4c31efbec0462f2aea3f410c45d07b04cdbd46e2fb39",
+        "runs_summary.md": "6b89ce868ab85a5b2a59c2723278bf3bd02da41ecc076b76cc58590f2d003fb6",
+        "runs_verify.py": "99579e37c18660cddfee330e4252c34cf0043573e4ff0bc1990f7d1fa5604db5",
+        "predictions.patch": "82993b2c58e0e4cc5ebc4c31efbec0462f2aea3f410c45d07b04cdbd46e2fb39",
+        "predictions_swebench.model_patch": "82993b2c58e0e4cc5ebc4c31efbec0462f2aea3f410c45d07b04cdbd46e2fb39",
+        "harness_report.json": "59f5f978cba96f7da1e255c92b48c7365e9c09985e1f737225f764851085a620",
+        "harness_test_output.txt": "763b97dbf9ec1ff611333ecf40987ae5a19ee047592ee11c865ccd08fd16821e"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12700:latest"
+    },
+    {
+      "instance_id": "django__django-12708",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "d01ceabf416b52c6b49aedc09759e751f6ac310f5ce138c4f6139ca095e9c821",
+        "runs_summary.md": "55f8240ea9eabd2f3b6dadc80c7da492cc8e76fc25bd4a6f34bcb619dcf0efcc",
+        "runs_verify.py": "b925c9196ec11d44c9aa1a726f20a38fd6877c0477d57b31424bb3b6dfd108ae",
+        "predictions.patch": "d01ceabf416b52c6b49aedc09759e751f6ac310f5ce138c4f6139ca095e9c821",
+        "predictions_swebench.model_patch": "d01ceabf416b52c6b49aedc09759e751f6ac310f5ce138c4f6139ca095e9c821",
+        "harness_report.json": "a70abcffb9812b5de6a97e2f9860586c91eab727b91e3724a69b31c91f6c2441",
+        "harness_test_output.txt": "f08f8ca2f540eefd0becffdec61e51d89490fe0071521caf6d19ad7a9a656cdb"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12708:latest"
+    },
+    {
+      "instance_id": "django__django-12856",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "07a6849b9940229b461e7bed710c81a6cdc52782dc3015b12fc6ecfedbfcb75a",
+        "runs_summary.md": "07989712b817dcbd7f480390786103b45a62493184fbf38f86ed4a3a7b3c434f",
+        "runs_verify.py": "ee0bceecdcf8fd0b921a1fa5759c0677833ba977c63eff5fe42b0cb49a9b0b7c",
+        "predictions.patch": "07a6849b9940229b461e7bed710c81a6cdc52782dc3015b12fc6ecfedbfcb75a",
+        "predictions_swebench.model_patch": "07a6849b9940229b461e7bed710c81a6cdc52782dc3015b12fc6ecfedbfcb75a",
+        "harness_report.json": "2e1ccec5963691c4918e9cffdc3a44883368bc43c2073fbf5366377f1b246895",
+        "harness_test_output.txt": "a0e926bb1d4cf47e87dc5cf853218114857ec04880ed0d250201d179ae682456"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12856:latest"
+    },
+    {
+      "instance_id": "django__django-12915",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "d1f83bf8d46db760c7ffc571c2112171c02dc721d146b327bbedf119504b9754",
+        "runs_summary.md": "eeba684df52ecdda6f346cea21acdf05228c5949e814e167897be7954bdba897",
+        "runs_verify.py": "876397aadf8c51b3df260729398080cdf586c3cb2912d236dd1c7a291ca9b401",
+        "predictions.patch": "d1f83bf8d46db760c7ffc571c2112171c02dc721d146b327bbedf119504b9754",
+        "predictions_swebench.model_patch": "d1f83bf8d46db760c7ffc571c2112171c02dc721d146b327bbedf119504b9754",
+        "harness_report.json": "84a60e00f6c065825a4a62a3ccdbd0aba07346f62e9382f96fcffb03af3e49e0",
+        "harness_test_output.txt": "ee75324f3cec70d61e03b59a953f4911f8b05524348bd6aa4497fe7b47831509"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12915:latest"
+    },
+    {
+      "instance_id": "django__django-12983",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "6ae14f97c6b3457db0d8ab05321ba51f7dd40150af233685f00c53c81cb69a6c",
+        "runs_summary.md": "955dc06a4152cf906a8da711d56b7f747fc069d04df7be1f4a873c63a83ea49e",
+        "runs_verify.py": "50d576ca5624bfe3b0f03faac6e9f4b6bbb6c49c43ab5f48b62516510f4dd1e6",
+        "predictions.patch": "6ae14f97c6b3457db0d8ab05321ba51f7dd40150af233685f00c53c81cb69a6c",
+        "predictions_swebench.model_patch": "6ae14f97c6b3457db0d8ab05321ba51f7dd40150af233685f00c53c81cb69a6c",
+        "harness_report.json": "49cae97ffc4e5023c0e3304f8845313159f3c2f54d300602c844657e22a85a5d",
+        "harness_test_output.txt": "7ce5b4a97298ca2bd985c8bd35dbdb4e26674534222e023fb0d7bca57e716bdf"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-12983:latest"
+    },
+    {
+      "instance_id": "django__django-13028",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "b371334c6daf82711a03d888a3cc1dea331fe146f998d98887da3dd493dd36c7",
+        "runs_summary.md": "54f54eadd416cf9b1c753471bbcc8b1a48515789284c6b9856c7e6ef0addb60b",
+        "runs_verify.py": "93755e3c183a9f5e854a71eb501fd1d0ce06c4d0ea09c4bef017daed7f4bd1ca",
+        "predictions.patch": "b371334c6daf82711a03d888a3cc1dea331fe146f998d98887da3dd493dd36c7",
+        "predictions_swebench.model_patch": "b371334c6daf82711a03d888a3cc1dea331fe146f998d98887da3dd493dd36c7",
+        "harness_report.json": "3c3fbde0bbf87498064d4c34f1d993849c86bcdc9729cd67241ad0b3c5d28ba2",
+        "harness_test_output.txt": "6bb973cb3ded169a13cd93be6ac9eaf010aad0826bfa6a09479cd17dfe6a70fc"
+      },
+      "verify_py_present": true,
+      "image": "swebench/sweb.eval.x86_64.django_1776_django-13028:latest"
+    },
+    {
+      "instance_id": "pylint-dev__pylint-5859",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "41fef95969b7f81bf4d9f53e85e97aa98155c7b3de1fd3cdf104d2bc71e17f1a",
+        "runs_summary.md": "c7758c9f963b72c795a4617aa10a2631e0c5ee9cb5353bffb3b3922bc438e5ed",
+        "runs_verify.py": null,
+        "predictions.patch": "41fef95969b7f81bf4d9f53e85e97aa98155c7b3de1fd3cdf104d2bc71e17f1a",
+        "predictions_swebench.model_patch": "41fef95969b7f81bf4d9f53e85e97aa98155c7b3de1fd3cdf104d2bc71e17f1a",
+        "harness_report.json": "8aaf66dd516c586dc1fa7d935992d0b16ab2f957d864985d464b99453594491d",
+        "harness_test_output.txt": "9fbd50ee6fa824800fe841852ff3e00f97b8aea897749bb558a7a2aa1095f601"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-5859:latest"
+    },
+    {
+      "instance_id": "pylint-dev__pylint-6506",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "b9a490de709b29dc4f3a02d749893b1e96078ed4c1a7399051a362ebb2403747",
+        "runs_summary.md": "8f261d7d28b313fd9eb0d1dd416245081f34d285bf093496320180339ed5d8d5",
+        "runs_verify.py": null,
+        "predictions.patch": "b9a490de709b29dc4f3a02d749893b1e96078ed4c1a7399051a362ebb2403747",
+        "predictions_swebench.model_patch": "b9a490de709b29dc4f3a02d749893b1e96078ed4c1a7399051a362ebb2403747",
+        "harness_report.json": "ced779e43f5bb18e8eb0b260b686b40f7ec807a6f33b7c3c475eab362a9df920",
+        "harness_test_output.txt": "b9dc2e8c00c8787b0e2eadfb750fb4c07170353d0295c88244293ff53dca2034"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-6506:latest"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5103",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "0eb3c976dc44caa9524e96dc3f941c733332b268adea667e8be3d861e7bd5646",
+        "runs_summary.md": "d3fb16ad99bda13b017347a45e3a500381d0514dd16ea9ef3a4e197c1547f7a0",
+        "runs_verify.py": null,
+        "predictions.patch": "0eb3c976dc44caa9524e96dc3f941c733332b268adea667e8be3d861e7bd5646",
+        "predictions_swebench.model_patch": "0eb3c976dc44caa9524e96dc3f941c733332b268adea667e8be3d861e7bd5646",
+        "harness_report.json": "788d10047c1cb4a3e8043cb8dbd9b40fa150bcecb6e57b9b25bd1031ffd90b9e",
+        "harness_test_output.txt": "f7dd22dc855ea9a4758e9a66b04c9b05ed5a25df5cfeaf8b259f709fec5553d8"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5103:latest"
+    },
+    {
+      "instance_id": "pytest-dev__pytest-5221",
+      "patch_delta_vs_predictions": true,
+      "sha256": {
+        "runs_patch.diff": "1bddfd690f056759333329386b26d5a0ed6d0ec5b776f979ee2216e5e2e10c80",
+        "runs_summary.md": "b87c8c678132c165cbeca2c06eb94a3b86fb3f06d8d4ab85531640c765c6b765",
+        "runs_verify.py": null,
+        "predictions.patch": "1bddfd690f056759333329386b26d5a0ed6d0ec5b776f979ee2216e5e2e10c80",
+        "predictions_swebench.model_patch": "1bddfd690f056759333329386b26d5a0ed6d0ec5b776f979ee2216e5e2e10c80",
+        "harness_report.json": "444ad4e5853c9a508d3d23f70ea93b0c0d29d189c0763691af3a804344b79456",
+        "harness_test_output.txt": "26a71bd0161e5de21db9d106c3e36064b41a1eda0de7e1069917a1f37e946d39"
+      },
+      "verify_py_present": false,
+      "image": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5221:latest"
+    }
+  ],
+  "images": {
+    "swebench/sweb.eval.x86_64.django_1776_django-10914:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-10914:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-10914@sha256:f26f0db931c6c1e785ab8287e1ea4f5f948846267db159deaf90b3fe7adea4e9",
+      "image_id": "sha256:f26f0db931c6c1e785ab8287e1ea4f5f948846267db159deaf90b3fe7adea4e9"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-10924:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-10924:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-10924@sha256:d41b289ea27a92ef6346702388e5ea0b8c8f48c41d83466a72c2dffb934007a1",
+      "image_id": "sha256:d41b289ea27a92ef6346702388e5ea0b8c8f48c41d83466a72c2dffb934007a1"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11001:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11001:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11001@sha256:68c61032db48a5eef2175532d3555e20acdd426aa5b426ba3acfe34a0ddd83b7",
+      "image_id": "sha256:68c61032db48a5eef2175532d3555e20acdd426aa5b426ba3acfe34a0ddd83b7"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11019:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11019:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11019@sha256:507a4ada244710df906c65194d1ef67e55348d1eefb79b48ed6eb86a42c05d18",
+      "image_id": "sha256:507a4ada244710df906c65194d1ef67e55348d1eefb79b48ed6eb86a42c05d18"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11039:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11039:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11039@sha256:895cb9b96a9ba3a7236514c6c6ecc21814b68c3ede142d2bb10df31a3645d496",
+      "image_id": "sha256:895cb9b96a9ba3a7236514c6c6ecc21814b68c3ede142d2bb10df31a3645d496"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11049:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11049:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11049@sha256:c5700017c1dfcca5ee0d2b68bbce2f2e2a69933089f0afa4cd0d888d4f1617f7",
+      "image_id": "sha256:c5700017c1dfcca5ee0d2b68bbce2f2e2a69933089f0afa4cd0d888d4f1617f7"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11099:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11099:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11099@sha256:cca302934edd881cc4f1e4647a389a25cdaa3c02bfa33667a4204934a09c4fb1",
+      "image_id": "sha256:cca302934edd881cc4f1e4647a389a25cdaa3c02bfa33667a4204934a09c4fb1"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11133:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11133:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11133@sha256:914093363dbe12def92c5d36e9bdc5270cce5ed0aa6f3daad8bc4ef0389c29bf",
+      "image_id": "sha256:914093363dbe12def92c5d36e9bdc5270cce5ed0aa6f3daad8bc4ef0389c29bf"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11179:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11179:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11179@sha256:23e061f0071647d4c459b2c3aa84081011080f57a4580727c16997cf01e0d477",
+      "image_id": "sha256:23e061f0071647d4c459b2c3aa84081011080f57a4580727c16997cf01e0d477"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11283:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11283:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11283@sha256:2ca0c1500292dd3c12c146efef8d1d7d3b25e0553b393b0495b3cf18bd6f4ed0",
+      "image_id": "sha256:2ca0c1500292dd3c12c146efef8d1d7d3b25e0553b393b0495b3cf18bd6f4ed0"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11422:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11422:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11422@sha256:d8703d50c49fae62753520403c3d4cd8a1048b7e554159aa4f46bb5f778f0ed3",
+      "image_id": "sha256:d8703d50c49fae62753520403c3d4cd8a1048b7e554159aa4f46bb5f778f0ed3"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11564:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11564:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11564@sha256:a565e9f99ade187a4fafee6ec7f977abd7b4ed1c96e77d13833a8fe71081aee4",
+      "image_id": "sha256:a565e9f99ade187a4fafee6ec7f977abd7b4ed1c96e77d13833a8fe71081aee4"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11583:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11583:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11583@sha256:f2ac03fe870177231ba0e72452b3617ebc54cbe62318deef41c7949397337d2e",
+      "image_id": "sha256:f2ac03fe870177231ba0e72452b3617ebc54cbe62318deef41c7949397337d2e"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11620:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11620:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11620@sha256:6c99f08e757436b33640c2a68bfa4572aad8dcdfe78adf77905dc7e25945aa47",
+      "image_id": "sha256:6c99f08e757436b33640c2a68bfa4572aad8dcdfe78adf77905dc7e25945aa47"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11630:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11630:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11630@sha256:86c81bee2d2a1c35e37df6a84ee6b929264822d31657bbe87b1aca59c7fde111",
+      "image_id": "sha256:86c81bee2d2a1c35e37df6a84ee6b929264822d31657bbe87b1aca59c7fde111"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11742:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11742:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11742@sha256:64c26c94843c2885714c57bfe0a98849be19cebea3fee7b6f54394554a98a8a5",
+      "image_id": "sha256:64c26c94843c2885714c57bfe0a98849be19cebea3fee7b6f54394554a98a8a5"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11797:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11797:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11797@sha256:2d3c56fb0a332d8f393607d3ea6bf4581bcd41a78c17118ae76f5a4df00ee90f",
+      "image_id": "sha256:2d3c56fb0a332d8f393607d3ea6bf4581bcd41a78c17118ae76f5a4df00ee90f"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-11999:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-11999:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-11999@sha256:3c7e7f035f611b17f2093ee6409364bc28cce8b9bac266b9590db762d197607e",
+      "image_id": "sha256:3c7e7f035f611b17f2093ee6409364bc28cce8b9bac266b9590db762d197607e"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12125:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12125:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12125@sha256:4345ad65eec0da8a32063c2c9a32df380e10b4fb4ccebfcfed9c4be9a185e5ff",
+      "image_id": "sha256:4345ad65eec0da8a32063c2c9a32df380e10b4fb4ccebfcfed9c4be9a185e5ff"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12184:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12184:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12184@sha256:c28686e155d0dd367dca0608074c62d28e5255629127d58a615594be24f20cbf",
+      "image_id": "sha256:c28686e155d0dd367dca0608074c62d28e5255629127d58a615594be24f20cbf"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12284:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12284:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12284@sha256:f6566d6750acadc4315c9bd1150506cc1be2dc1eadb55bff57561e3d6b872fe9",
+      "image_id": "sha256:f6566d6750acadc4315c9bd1150506cc1be2dc1eadb55bff57561e3d6b872fe9"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12286:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12286:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12286@sha256:90c377f8c5ea3844a549520f78a2f1f0dfa5e92663f3c7a4d8e53beda4d4b158",
+      "image_id": "sha256:90c377f8c5ea3844a549520f78a2f1f0dfa5e92663f3c7a4d8e53beda4d4b158"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12308:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12308:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12308@sha256:6250d2a608d52b82cd4eb03eb33082bb9927397c01876025499430b782cce9a6",
+      "image_id": "sha256:6250d2a608d52b82cd4eb03eb33082bb9927397c01876025499430b782cce9a6"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12453:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12453:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12453@sha256:a4ddc630adffc7e64d7f090bb3c486d4dac0fc2426ff5b5f73c2f6961a775c7a",
+      "image_id": "sha256:a4ddc630adffc7e64d7f090bb3c486d4dac0fc2426ff5b5f73c2f6961a775c7a"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12470:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12470:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12470@sha256:6bcd06ce3f41aba5572391bb23e74cd84dabefce4deaa90c28211501bb9e759c",
+      "image_id": "sha256:6bcd06ce3f41aba5572391bb23e74cd84dabefce4deaa90c28211501bb9e759c"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12497:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12497:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12497@sha256:8fb1142fc9cece8def906efb3322a40430b3b29ea11cdb5e1f697c9332d93620",
+      "image_id": "sha256:8fb1142fc9cece8def906efb3322a40430b3b29ea11cdb5e1f697c9332d93620"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12589:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12589:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12589@sha256:91c4b9e6b044f038a8f9969c95208bf03431a1ed61e5527bf08a40ee6b18bbe8",
+      "image_id": "sha256:91c4b9e6b044f038a8f9969c95208bf03431a1ed61e5527bf08a40ee6b18bbe8"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12700:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12700:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12700@sha256:be0fbf89e9add2c0ca43199a4485e943d17f61bb80691a70719ff6618c27dcc8",
+      "image_id": "sha256:be0fbf89e9add2c0ca43199a4485e943d17f61bb80691a70719ff6618c27dcc8"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12708:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12708:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12708@sha256:3722a130f618602e5636c8c7ddd821550e2c2462b569907c4140fc162e24671e",
+      "image_id": "sha256:3722a130f618602e5636c8c7ddd821550e2c2462b569907c4140fc162e24671e"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12856:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12856:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12856@sha256:d53de59169fc601caa9cc2392610aa78d11045e7ec2b61595f93667dc1db5a90",
+      "image_id": "sha256:d53de59169fc601caa9cc2392610aa78d11045e7ec2b61595f93667dc1db5a90"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12915:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12915:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12915@sha256:cb8a11360b096bcd0ca966751371b7d83479127afcdd69bc4522456a9ce97451",
+      "image_id": "sha256:cb8a11360b096bcd0ca966751371b7d83479127afcdd69bc4522456a9ce97451"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-12983:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-12983:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-12983@sha256:f89a493dc687475e9f309b2bcb838ea6722faef9878f49b9ee6dfdd3eaa19c80",
+      "image_id": "sha256:f89a493dc687475e9f309b2bcb838ea6722faef9878f49b9ee6dfdd3eaa19c80"
+    },
+    "swebench/sweb.eval.x86_64.django_1776_django-13028:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.django_1776_django-13028:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.django_1776_django-13028@sha256:4250631872579b9eb6731a16a489ba31be1efff3e0c1e0eb2a7feb24215ce92b",
+      "image_id": "sha256:4250631872579b9eb6731a16a489ba31be1efff3e0c1e0eb2a7feb24215ce92b"
+    },
+    "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-5859:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-5859:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-5859@sha256:12412d9d1d7a06b8fa30dd0ff14ae67177fffee77d1e6ac277606fb7334837cf",
+      "image_id": "sha256:12412d9d1d7a06b8fa30dd0ff14ae67177fffee77d1e6ac277606fb7334837cf"
+    },
+    "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-6506:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-6506:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-6506@sha256:f2304d2a6461bc098bc872efc4474b34b54eec72f5a87bacc0509a88ba52fb2d",
+      "image_id": "sha256:f2304d2a6461bc098bc872efc4474b34b54eec72f5a87bacc0509a88ba52fb2d"
+    },
+    "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5103:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5103:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5103@sha256:1648c614485c81d9e08bcf9ec8014fb38cd2f20fad6bea782552d923a35ce714",
+      "image_id": "sha256:1648c614485c81d9e08bcf9ec8014fb38cd2f20fad6bea782552d923a35ce714"
+    },
+    "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5221:latest": {
+      "repo_tags": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5221:latest",
+      "repo_digests": "swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5221@sha256:547472f1933751a67623599dae697188232c9712a46ab66fb69330f88b911e5a",
+      "image_id": "sha256:547472f1933751a67623599dae697188232c9712a46ab66fb69330f88b911e5a"
+    }
+  },
+  "inventory": {
+    "patch.diff": 37,
+    "summary.md": 37,
+    "verify.py": 19,
+    "harness report.json": 37,
+    "total": 37
+  }
+}

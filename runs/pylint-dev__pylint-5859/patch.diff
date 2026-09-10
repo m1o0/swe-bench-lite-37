@@ -1,0 +1,22 @@
+diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py
+index 69149e61..30df33fb 100644
+--- a/pylint/checkers/misc.py
++++ b/pylint/checkers/misc.py
+@@ -120,10 +120,15 @@ class EncodingChecker(BaseChecker):
+         super().open()
+ 
+         notes = "|".join(re.escape(note) for note in self.config.notes)
++        # A trailing '\b' word boundary can never match after a tag that
++        # consists entirely of punctuation, e.g. '???', because a boundary
++        # requires a transition between word and non-word characters.
++        # Use a negative lookahead instead so a tag is ignored only when
++        # it is immediately followed by another word character.
+         if self.config.notes_rgx:
+-            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})\b"
++            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})(?!\w)"
+         else:
+-            regex_string = rf"#\s*({notes})\b"
++            regex_string = rf"#\s*({notes})(?!\w)"
+ 
+         self._fixme_pattern = re.compile(regex_string, re.I)
+ 

@@ -1,0 +1,56 @@
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index 7649c39262..77c97ed161 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -352,8 +352,12 @@ class SQLCompiler:
+             # Don't add the same column twice, but the order direction is
+             # not taken into account so we strip it. When this entire method
+             # is refactored into expressions, then we can check each part as we
+-            # generate it.
+-            without_ordering = self.ordering_parts.search(sql).group(1)
++            # generate it. Since the ordering_parts regex cannot match across
++            # line boundaries, the SQL is first reduced to a single line so
++            # that multiline expressions (e.g. RawSQL()) are deduplicated on
++            # their full text instead of only their last line.
++            sql_oneline = ' '.join(sql.splitlines())
++            without_ordering = self.ordering_parts.search(sql_oneline).group(1)
+             params_hash = make_hashable(params)
+             if (without_ordering, params_hash) in seen:
+                 continue
+diff --git a/tests/ordering/tests.py b/tests/ordering/tests.py
+index 16e5cc9b2d..03ff233078 100644
+--- a/tests/ordering/tests.py
++++ b/tests/ordering/tests.py
+@@ -1,7 +1,7 @@
+ from datetime import datetime
+ from operator import attrgetter
+ 
+-from django.db.models import Count, DateTimeField, F, Max, OuterRef, Subquery
++from django.db.models import Count, DateTimeField, F, Max, OuterRef, RawSQL, Subquery
+ from django.db.models.functions import Upper
+ from django.test import TestCase
+ from django.utils.deprecation import RemovedInDjango31Warning
+@@ -93,6 +93,23 @@ class OrderingTests(TestCase):
+         with self.assertRaisesMessage(ValueError, msg):
+             Article.objects.order_by(F("author").desc(nulls_last=True, nulls_first=True))
+ 
++    def test_order_by_multiline_raw_sql(self):
++        """
++        Multiline RawSQL expressions in order_by() must not be discarded as
++        duplicates when their last lines are identical (#30663).
++        """
++        qs = Article.objects.order_by(
++            RawSQL('''
++                case when pub_date > '2005-07-26' then
++                    id else null end''', []).asc(),
++            RawSQL('''
++                case when pub_date < '2005-07-26' then
++                    id else null end''', []).desc(),
++        )
++        sql = ' '.join(str(qs.query).split()).lower()
++        self.assertIn("case when pub_date > '2005-07-26' then id else null end asc", sql)
++        self.assertIn("case when pub_date < '2005-07-26' then id else null end desc", sql)
++
+     def assertQuerysetEqualReversible(self, queryset, sequence):
+         self.assertSequenceEqual(queryset, sequence)
+         self.assertSequenceEqual(queryset.reverse(), list(reversed(sequence)))

@@ -1,0 +1,55 @@
+diff --git a/changelog/5221.feature.rst b/changelog/5221.feature.rst
+new file mode 100644
+index 000000000..868822946
+--- /dev/null
++++ b/changelog/5221.feature.rst
+@@ -0,0 +1,2 @@
++``pytest --fixtures`` now also shows the scope of fixtures which have a scope
++other than ``function`` (the default), for example ``mysession_fixture [session scope]``.
+diff --git a/src/_pytest/python.py b/src/_pytest/python.py
+index 377357846..0b6d9a1e3 100644
+--- a/src/_pytest/python.py
++++ b/src/_pytest/python.py
+@@ -1346,6 +1346,8 @@ def _showfixtures_main(config, session):
+             funcargspec = "%s -- %s" % (argname, bestrel)
+         else:
+             funcargspec = argname
++        if fixturedef.scope != "function":
++            funcargspec = "%s [%s scope]" % (funcargspec, fixturedef.scope)
+         tw.line(funcargspec, green=True)
+         loc = getlocation(fixturedef.func, curdir)
+         doc = fixturedef.func.__doc__ or ""
+diff --git a/testing/python/fixtures.py b/testing/python/fixtures.py
+index 48f8028e6..0a1914647 100644
+--- a/testing/python/fixtures.py
++++ b/testing/python/fixtures.py
+@@ -3043,6 +3043,29 @@ class TestShowFixtures(object):
+         result = testdir.runpytest("--fixtures", "-v")
+         result.stdout.fnmatch_lines(["*tmpdir*--*tmpdir.py*", "*temporary directory*"])
+ 
++    def test_show_fixtures_verbose_include_scope(self, testdir):
++        p = testdir.makepyfile(
++            '''
++            import pytest
++            @pytest.fixture(scope="module")
++            def arg_1():
++                pass
++            @pytest.fixture
++            def arg_2():
++                pass
++            @pytest.fixture(scope="session", autouse=True)
++            def arg_3():
++                pass
++        '''
++        )
++        result = testdir.runpytest("--fixtures", "-v", p)
++        result.stdout.fnmatch_lines(
++            ["*arg_1*module*scope*", "*arg_2 -- *", "*arg_3*session*scope*"]
++        )
++
++        result = testdir.runpytest("--fixtures", p)
++        result.stdout.fnmatch_lines(["*arg_1*module*scope*", "*arg_3*session*scope*"])
++
+     def test_show_fixtures_testmodule(self, testdir):
+         p = testdir.makepyfile(
+             '''

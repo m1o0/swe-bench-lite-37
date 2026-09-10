@@ -1,0 +1,21 @@
+diff --git a/django/utils/autoreload.py b/django/utils/autoreload.py
+index 7ca0d68fae..cb9352b61e 100644
+--- a/django/utils/autoreload.py
++++ b/django/utils/autoreload.py
+@@ -103,7 +103,15 @@ def iter_all_python_module_files():
+     # aren't loaded on the fly.
+     keys = sorted(sys.modules)
+     modules = tuple(m for m in map(sys.modules.__getitem__, keys) if not isinstance(m, weakref.ProxyTypes))
+-    return iter_modules_and_files(modules, frozenset(_error_files))
++    # The '__main__' module (e.g. manage.py when running the development
++    # server) has no __spec__, so it is skipped by iter_modules_and_files().
++    # Include its file explicitly so that changes to it are tracked.
++    main_module = sys.modules.get('__main__')
++    main_module_file = getattr(main_module, '__file__', None)
++    extra_files = frozenset(_error_files)
++    if main_module_file:
++        extra_files |= {main_module_file}
++    return iter_modules_and_files(modules, extra_files)
+ 
+ 
+ @functools.lru_cache(maxsize=1)

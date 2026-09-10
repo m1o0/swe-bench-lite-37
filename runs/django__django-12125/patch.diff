@@ -1,0 +1,42 @@
+diff --git a/django/db/migrations/serializer.py b/django/db/migrations/serializer.py
+index 7d226955d5..127a775186 100644
+--- a/django/db/migrations/serializer.py
++++ b/django/db/migrations/serializer.py
+@@ -6,6 +6,7 @@ import enum
+ import functools
+ import math
+ import re
++import sys
+ import types
+ import uuid
+ 
+@@ -91,12 +92,19 @@ class DeconstructableSerializer(BaseSerializer):
+     @staticmethod
+     def _serialize_path(path):
+         module, name = path.rsplit(".", 1)
++        # Rewrite invalid paths to actual ones if they exist, e.g. nested
++        # classes: "mod.Outer.Inner" must import "mod" and reference
++        # "mod.Outer.Inner" — rsplit() alone would try to import the
++        # non-existent module "mod.Outer".
++        while "." in module and sys.modules.get(module) is None:
++            module, extra = module.rsplit(".", 1)
++            name = extra + "." + name
+         if module == "django.db.models":
+             imports = {"from django.db import models"}
+             name = "models.%s" % name
+         else:
+             imports = {"import %s" % module}
+-            name = path
++            name = "%s.%s" % (module, name)
+         return name, imports
+ 
+     def serialize(self):
+@@ -269,7 +277,7 @@ class TypeSerializer(BaseSerializer):
+             if module == builtins.__name__:
+                 return self.value.__name__, set()
+             else:
+-                return "%s.%s" % (module, self.value.__name__), {"import %s" % module}
++                return "%s.%s" % (module, self.value.__qualname__), {"import %s" % module}
+ 
+ 
+ class UUIDSerializer(BaseSerializer):

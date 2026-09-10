@@ -1,0 +1,26 @@
+diff --git a/django/core/checks/model_checks.py b/django/core/checks/model_checks.py
+index 5c2266ca1d..9fc1e87116 100644
+--- a/django/core/checks/model_checks.py
++++ b/django/core/checks/model_checks.py
+@@ -4,6 +4,7 @@ from collections import defaultdict
+ from itertools import chain
+ 
+ from django.apps import apps
++from django.conf import settings
+ from django.core.checks import Error, Tags, register
+ 
+ 
+@@ -37,6 +38,13 @@ def check_all_models(app_configs=None, **kwargs):
+             constraints[model_constraint.name].append(model._meta.label)
+     for db_table, model_labels in db_table_models.items():
+         if len(model_labels) != 1:
++            # Models in different apps may legitimately share a table name
++            # when each model lives in a different database, signalled by the
++            # presence of database routers. A clash within a single app is
++            # always an error.
++            app_labels = {label.split('.')[0] for label in model_labels}
++            if len(app_labels) > 1 and settings.DATABASE_ROUTERS:
++                continue
+             errors.append(
+                 Error(
+                     "db_table '%s' is used by multiple models: %s."

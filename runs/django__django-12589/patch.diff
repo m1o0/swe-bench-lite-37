@@ -1,0 +1,41 @@
+diff --git a/django/db/models/expressions.py b/django/db/models/expressions.py
+index 84960d77e1..39460fffea 100644
+--- a/django/db/models/expressions.py
++++ b/django/db/models/expressions.py
+@@ -820,6 +820,11 @@ class Ref(Expression):
+         return connection.ops.quote_name(self.refs), []
+ 
+     def get_group_by_cols(self, alias=None):
++        # Grouping by a bare alias reference is ambiguous when the aliased
++        # expression is a subquery (the alias name can collide with table
++        # columns); group by the full source expression instead.
++        if isinstance(self.source, Subquery):
++            return self.source.get_group_by_cols()
+         return [self]
+ 
+ 
+diff --git a/django/db/models/sql/compiler.py b/django/db/models/sql/compiler.py
+index 63ca817355..bc5cae8e55 100644
+--- a/django/db/models/sql/compiler.py
++++ b/django/db/models/sql/compiler.py
+@@ -6,7 +6,7 @@ from itertools import chain
+ from django.core.exceptions import EmptyResultSet, FieldError
+ from django.db import DatabaseError, NotSupportedError
+ from django.db.models.constants import LOOKUP_SEP
+-from django.db.models.expressions import OrderBy, Random, RawSQL, Ref, Value
++from django.db.models.expressions import OrderBy, Random, RawSQL, Ref, Subquery, Value
+ from django.db.models.functions import Cast
+ from django.db.models.query_utils import Q, select_related_descend
+ from django.db.models.sql.constants import (
+@@ -104,6 +104,11 @@ class SQLCompiler:
+             for expr in self.query.group_by:
+                 if not hasattr(expr, 'as_sql'):
+                     expressions.append(self.query.resolve_ref(expr))
++                elif isinstance(expr, Ref) and isinstance(expr.source, Subquery):
++                    # Grouping by the bare alias of a subquery is ambiguous
++                    # (the alias can collide with table columns); use the
++                    # full source expression instead.
++                    expressions.append(expr.source)
+                 else:
+                     expressions.append(expr)
+         # Note that even if the group_by is set, it is only the minimal

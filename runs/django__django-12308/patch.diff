@@ -1,0 +1,30 @@
+diff --git a/django/contrib/admin/utils.py b/django/contrib/admin/utils.py
+index e4ddc8f017..cf6b041265 100644
+--- a/django/contrib/admin/utils.py
++++ b/django/contrib/admin/utils.py
+@@ -398,6 +398,10 @@ def display_for_field(value, field, empty_value_display):
+         return formats.number_format(value)
+     elif isinstance(field, models.FileField) and value:
+         return format_html('<a href="{}">{}</a>', value.url, value)
++    elif isinstance(field, models.JSONField):
++        # Render valid JSON (via prepare_value, which also passes through
++        # InvalidJSONInput untouched) instead of the Python repr.
++        return field.prepare_value(value)
+     else:
+         return display_for_value(value, empty_value_display)
+ 
+diff --git a/django/db/models/fields/json.py b/django/db/models/fields/json.py
+index edc5441799..8019a80e94 100644
+--- a/django/db/models/fields/json.py
++++ b/django/db/models/fields/json.py
+@@ -85,6 +85,10 @@ class JSONField(CheckFieldDefaultMixin, Field):
+             return value
+         return json.dumps(value, cls=self.encoder)
+ 
++    def prepare_value(self, value):
++        # Display valid JSON (e.g. in the admin) instead of the Python repr.
++        return json.dumps(value, cls=self.encoder)
++
+     def get_transform(self, name):
+         transform = super().get_transform(name)
+         if transform:

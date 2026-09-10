@@ -1,0 +1,39 @@
+diff --git a/django/template/context_processors.py b/django/template/context_processors.py
+index 0e9efb2f69..e711f8add7 100644
+--- a/django/template/context_processors.py
++++ b/django/template/context_processors.py
+@@ -65,16 +65,30 @@ def tz(request):
+ 
+ def static(request):
+     """
+-    Add static-related context variables to the context.
++    Add static-related context variables to the context, prefixing STATIC_URL
++    with the request's SCRIPT_NAME when one is set (e.g. when the project is
++    served from a sub-path).
+     """
+-    return {'STATIC_URL': settings.STATIC_URL}
++    static_url = settings.STATIC_URL
++    script_name = getattr(request, 'META', {}).get('SCRIPT_NAME', '')
++    if static_url and script_name and not static_url.startswith(script_name):
++        script_name = script_name if script_name.endswith('/') else script_name + '/'
++        static_url = script_name + static_url.lstrip('/')
++    return {'STATIC_URL': static_url}
+ 
+ 
+ def media(request):
+     """
+-    Add media-related context variables to the context.
++    Add media-related context variables to the context, prefixing MEDIA_URL
++    with the request's SCRIPT_NAME when one is set (e.g. when the project is
++    served from a sub-path).
+     """
+-    return {'MEDIA_URL': settings.MEDIA_URL}
++    media_url = settings.MEDIA_URL
++    script_name = getattr(request, 'META', {}).get('SCRIPT_NAME', '')
++    if media_url and script_name and not media_url.startswith(script_name):
++        script_name = script_name if script_name.endswith('/') else script_name + '/'
++        media_url = script_name + media_url.lstrip('/')
++    return {'MEDIA_URL': media_url}
+ 
+ 
+ def request(request):

@@ -1,0 +1,77 @@
+prepull start 2026-09-10T17:24:07+08:00
+django__django-11001	FAILED	
+django__django-10924	FAILED	
+django__django-10914	FAILED	
+django__django-11019	FAILED	
+django__django-11039	FAILED	
+django__django-11049	FAILED	
+django__django-11133	FAILED	
+django__django-11179	FAILED	
+django__django-11099	FAILED	
+django__django-11422	FAILED	
+django__django-11283	FAILED	
+django__django-11564	FAILED	
+django__django-11583	FAILED	
+django__django-11620	FAILED	
+django__django-11630	FAILED	
+django__django-11742	FAILED	
+django__django-11797	FAILED	
+django__django-11999	FAILED	
+django__django-12184	FAILED	
+django__django-12125	FAILED	
+django__django-12284	FAILED	
+django__django-12286	FAILED	
+django__django-12453	FAILED	
+django__django-12308	FAILED	
+django__django-12589	FAILED	
+django__django-12470	FAILED	
+django__django-12497	FAILED	
+django__django-12856	FAILED	
+django__django-12708	FAILED	
+django__django-12700	FAILED	
+django__django-12915	FAILED	
+django__django-12983	FAILED	
+django__django-13028	FAILED	
+pylint-dev__pylint-5859	FAILED	
+pylint-dev__pylint-6506	FAILED	
+pytest-dev__pytest-5103	FAILED	
+pytest-dev__pytest-5221	FAILED	
+prepull done 2026-09-10T17:26:09+08:00 pulled=0 already_present=0 failed=37
+skip list (image unavailable):
+django__django-11001
+django__django-10924
+django__django-10914
+django__django-11019
+django__django-11039
+django__django-11049
+django__django-11133
+django__django-11179
+django__django-11099
+django__django-11422
+django__django-11283
+django__django-11564
+django__django-11583
+django__django-11620
+django__django-11630
+django__django-11742
+django__django-11797
+django__django-11999
+django__django-12184
+django__django-12125
+django__django-12284
+django__django-12286
+django__django-12453
+django__django-12308
+django__django-12589
+django__django-12470
+django__django-12497
+django__django-12856
+django__django-12708
+django__django-12700
+django__django-12915
+django__django-12983
+django__django-13028
+pylint-dev__pylint-5859
+pylint-dev__pylint-6506
+pytest-dev__pytest-5103
+pytest-dev__pytest-5221

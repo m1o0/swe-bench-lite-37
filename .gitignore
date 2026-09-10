@@ -1,0 +1,21 @@
+# raw working copies never belong in the repo
+*.pyc
+__pycache__/
+.venv/
+venv/
+
+# the dataset is linked, not committed (see NOTICE)
+/data/
+*.parquet
+
+# local-only working files (anchored to the repo root on purpose:
+# notes/prepull_log.txt IS published as evidence, the root one is not)
+/tasks/
+/prepull_log.txt
+/logs/run_evaluation/smoke/
+/logs/run_evaluation/smoke2/
+/glm-5.3-zcode-campaign.smoke*.json
+
+# OS noise
+Thumbs.db
+.DS_Store

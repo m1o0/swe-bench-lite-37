@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use this dataset or protocol, please cite it as below."
+title: "SWE-bench Lite 37: blind-written patches, official grading, and a frozen evidence manifest"
+abstract: >-
+  37 SWE-bench Lite instances patched without reading the upstream fix or the benchmark's
+  test_patch, each with a self-reported confidence label written before grading. Graded with
+  the official swebench harness: 25 resolved, 12 unresolved, 0 patch-application failures,
+  0 infrastructure failures. Every graded artifact is bound to a SHA-256 in MANIFEST_v1.json.
+type: dataset
+authors:
+  - family-names: "mio"
+    given-names: "mio"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+version: "1.0"
+date-released: "2026-09-10"
+license: MIT
+keywords:
+  - SWE-bench
+  - software engineering agents
+  - confidence calibration
+  - failure analysis
+  - reproducibility
+identifiers:
+  - type: url
+    value: "https://github.com/m1o0/swe-bench-lite-37"
+references:
+  - type: conference-paper
+    title: "SWE-bench: Can Language Models Resolve Real-World GitHub Issues?"
+    authors:
+      - family-names: "Jimenez"
+        given-names: "Carlos E."
+      - family-names: "Yang"
+        given-names: "John"
+      - family-names: "Wettig"
+        given-names: "Alexander"
+      - family-names: "Yao"
+        given-names: "Shunyu"
+      - family-names: "Pei"
+        given-names: "Kexin"
+      - family-names: "Press"
+        given-names: "Ofir"
+      - family-names: "Narasimhan"
+        given-names: "Karthik R."
+    conference:
+      name: "The Twelfth International Conference on Learning Representations (ICLR 2024)"
+    url: "https://arxiv.org/abs/2310.06770"

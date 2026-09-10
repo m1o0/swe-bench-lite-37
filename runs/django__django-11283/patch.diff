@@ -1,0 +1,45 @@
+diff --git a/django/contrib/auth/migrations/0011_update_proxy_permissions.py b/django/contrib/auth/migrations/0011_update_proxy_permissions.py
+index 0e66649695..fc33069c9c 100644
+--- a/django/contrib/auth/migrations/0011_update_proxy_permissions.py
++++ b/django/contrib/auth/migrations/0011_update_proxy_permissions.py
+@@ -1,4 +1,4 @@
+-from django.db import migrations
++from django.db import IntegrityError, migrations, transaction
+ from django.db.models import Q
+ 
+ 
+@@ -24,10 +24,30 @@ def update_proxy_model_permissions(apps, schema_editor, reverse=False):
+         proxy_content_type = ContentType.objects.get_for_model(Model, for_concrete_model=False)
+         old_content_type = proxy_content_type if reverse else concrete_content_type
+         new_content_type = concrete_content_type if reverse else proxy_content_type
+-        Permission.objects.filter(
+-            permissions_query,
+-            content_type=old_content_type,
+-        ).update(content_type=new_content_type)
++        try:
++            with transaction.atomic():
++                Permission.objects.filter(
++                    permissions_query,
++                    content_type=old_content_type,
++                ).update(content_type=new_content_type)
++        except IntegrityError:
++            # A permission with a codename to move already exists for the new
++            # content type, e.g. when a model was deleted and recreated as a
++            # proxy model, leaving the permissions of the original model
++            # behind. Because (content_type, codename) is unique, permissions
++            # that would collide are duplicates of the existing ones and
++            # cannot be moved; remove them, then move the remaining ones.
++            Permission.objects.filter(
++                permissions_query,
++                content_type=old_content_type,
++                codename__in=Permission.objects.filter(
++                    content_type=new_content_type,
++                ).values('codename'),
++            ).delete()
++            Permission.objects.filter(
++                permissions_query,
++                content_type=old_content_type,
++            ).update(content_type=new_content_type)
+ 
+ 
+ def revert_proxy_model_permissions(apps, schema_editor):

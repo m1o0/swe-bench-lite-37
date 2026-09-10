@@ -1,0 +1,18 @@
+diff --git a/django/utils/autoreload.py b/django/utils/autoreload.py
+index 25c3b44250..d27ba6a75b 100644
+--- a/django/utils/autoreload.py
++++ b/django/utils/autoreload.py
+@@ -143,6 +143,13 @@ def iter_modules_and_files(modules, extra_files):
+             # The module could have been removed, don't fail loudly if this
+             # is the case.
+             continue
++        except (OSError, ValueError) as e:
++            # Some paths (e.g. those with embedded null bytes/characters)
++            # can't be resolved on the filesystem; skip them instead of
++            # crashing the reloader.
++            if 'embedded null' not in str(e):
++                raise
++            continue
+         results.add(resolved_path)
+     return frozenset(results)
+ 

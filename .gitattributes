@@ -1,0 +1,27 @@
+# Normalise line endings so diffs, patches and shell scripts stay byte-stable.
+* text=auto eol=lf
+
+*.diff text eol=lf
+*.patch text eol=lf
+*.jsonl text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+
+# Evidence files must not be touched by git: their SHA-256 is recorded in
+# MANIFEST_v1.json, so any normalisation would break the hash binding.
+runs/**/patch.diff -text
+runs/**/summary.md -text
+runs/**/verify.py -text
+logs/**/report.json -text
+logs/**/test_output.txt -text
+predictions.jsonl -text
+predictions_swebench.jsonl -text
+glm-5.3-zcode-campaign.tonight.json -text
+
+# The manifest itself is part of the frozen record: keep its bytes as written
+# (otherwise git rewrites CRLF -> LF and the published copy differs from the local one).
+MANIFEST_v1.json -text
+MANIFEST_v1.md -text
+
+# Keep the commit stat readable for the big text evidence
+logs/**/test_output.txt -diff

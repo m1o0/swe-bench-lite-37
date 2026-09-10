@@ -1,0 +1,66 @@
+diff --git a/django/db/models/base.py b/django/db/models/base.py
+index 7bb3fa4706..4b5000a013 100644
+--- a/django/db/models/base.py
++++ b/django/db/models/base.py
+@@ -1926,6 +1926,11 @@ class Model(metaclass=ModelBase):
+                         id='models.W038',
+                     )
+                 )
++        errors.extend(
++            error
++            for constraint in cls._meta.constraints
++            for error in constraint.check(cls)
++        )
+         return errors
+ 
+ 
+diff --git a/django/db/models/constraints.py b/django/db/models/constraints.py
+index 64bd60484e..f44f62e2e0 100644
+--- a/django/db/models/constraints.py
++++ b/django/db/models/constraints.py
+@@ -1,5 +1,6 @@
+ from enum import Enum
+ 
++from django.core import checks
+ from django.db.models.query_utils import Q
+ from django.db.models.sql.query import Query
+ 
+@@ -95,6 +96,38 @@ class UniqueConstraint(BaseConstraint):
+         self.deferrable = deferrable
+         super().__init__(name)
+ 
++    def check(self, model):
++        return self._check_fields(model)
++
++    def _check_fields(self, model):
++        errors = []
++        fields = model._meta.local_fields + list(model._meta.local_many_to_many)
++        lookup_fields = [field.name for field in fields] + [
++            field.attname for field in fields
++        ]
++        for field_name in self.fields:
++            if field_name not in lookup_fields:
++                errors.append(
++                    checks.Error(
++                        "'fields' refers to the nonexistent field '%s'." % field_name,
++                        obj=model,
++                        id='models.E012',
++                    )
++                )
++                continue
++            if any(
++                field.name == field_name and field.many_to_many
++                for field in fields
++            ):
++                errors.append(
++                    checks.Error(
++                        "'fields' must not contain the ManyToManyField '%s'." % field_name,
++                        obj=model,
++                        id='models.E012',
++                    )
++                )
++        return errors
++
+     def _get_condition_sql(self, model, schema_editor):
+         if self.condition is None:
+             return None
