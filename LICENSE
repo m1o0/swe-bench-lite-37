@@ -19,11 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-The MIT licence above covers the original content of this repository: the generated
-patches, the per-instance write-ups, the analysis scripts and the reports.
-
-It does NOT relicense third-party material. See NOTICE for the licences of the
-benchmark, the datasets and the upstream projects that this experiment touches.
