@@ -1,4 +1,7 @@
-# SWE-bench Lite × 37: blind-written patches, official grading, and a frozen evidence manifest
+﻿# SWE-bench Lite × 37: blind-written patches, official grading, and a frozen evidence manifest
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22720032.svg)](https://doi.org/10.5281/zenodo.22720032)
+
 
 **English (short)** — 37 real GitHub issues from SWE-bench Lite were patched *without looking at the
 upstream fix or the benchmark's `test_patch`*, each with a root-cause write-up and a **self-reported
