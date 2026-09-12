@@ -1,4 +1,4 @@
-# 今晚(2026-09-06)SWE-bench 冲刺战果清单(最终版)
+﻿# 今晚(2026-09-06)SWE-bench 冲刺战果清单(最终版)
 # 打分:见 SCORING.md。每条含 patch.diff + summary.md + verify 于 runs\<instance_id>\
 #
 # 【2026-09-10 更正】产出并不齐整，实际覆盖为：patch.diff 37/37、summary.md 37/37、
@@ -55,10 +55,10 @@
 37. django__django-13028 — 模型字段名 filterable 误判为表达式退出(high,resolve_expression 门控)
 
 ## 环境
-- WSL2 Ubuntu 22.04(D:\mio\wsl) + Docker 29.8.0(DaoCloud 透明镜像源)
+- WSL2 Ubuntu 22.04(D:\swe\wsl) + Docker 29.8.0(DaoCloud 透明镜像源)
 - 数据集:swe-experiment\data\swebench_lite_test.parquet(SWE-bench Lite 300 条)
-- 任务卡:tasks\<instance_id>.json;仓库:D:\mio\repos(django/sympy/pylint/pytest)
-- 打分:SCORING.md;工作树:运行中的在 D:\mio\worktrees(打分后可删)
+- 任务卡:tasks\<instance_id>.json;仓库:D:\swe\repos(django/sympy/pylint/pytest)
+- 打分:SCORING.md;工作树:运行中的在 D:\swe\worktrees(打分后可删)
 
 ## 官方测试套件验证(20:10,runtests.py 实跑)
 29 个 Django 工树中的 21 个已在 WSL 用官方 runtests.py 跑过对应测试模块,
