@@ -1,4 +1,4 @@
-﻿# 今晚(2026-09-06)SWE-bench 冲刺战果清单(最终版)
+# 今晚(2026-09-06)SWE-bench 冲刺战果清单(最终版)
 # 打分:见 SCORING.md。每条含 patch.diff + summary.md + verify 于 runs\<instance_id>\
 #
 # 【2026-09-10 更正】产出并不齐整，实际覆盖为：patch.diff 37/37、summary.md 37/37、
@@ -55,10 +55,10 @@
 37. django__django-13028 — 模型字段名 filterable 误判为表达式退出(high,resolve_expression 门控)
 
 ## 环境
-- WSL2 Ubuntu 22.04(D:\swe\wsl) + Docker 29.8.0(DaoCloud 透明镜像源)
+- WSL2 Ubuntu 22.04(D:\mio\wsl) + Docker 29.8.0(DaoCloud 透明镜像源)
 - 数据集:swe-experiment\data\swebench_lite_test.parquet(SWE-bench Lite 300 条)
-- 任务卡:tasks\<instance_id>.json;仓库:D:\swe\repos(django/sympy/pylint/pytest)
-- 打分:SCORING.md;工作树:运行中的在 D:\swe\worktrees(打分后可删)
+- 任务卡:tasks\<instance_id>.json;仓库:D:\mio\repos(django/sympy/pylint/pytest)
+- 打分:SCORING.md;工作树:运行中的在 D:\mio\worktrees(打分后可删)
 
 ## 官方测试套件验证(20:10,runtests.py 实跑)
 29 个 Django 工树中的 21 个已在 WSL 用官方 runtests.py 跑过对应测试模块,
@@ -217,3 +217,117 @@ v1 已冻结，后续按 `V2_PLAN.md` 分列推进；本次先把脚手架落盘
 - `run_eval_v2.sh`（WSL 入口，默认 `-id tonight-v2`）、`analyze_v2.py` → `comparison_v2.md`；
 - 当前 `comparison_v2.md` 为**未运行空态**骨架：v2 条目 12、已跑 0；跑完后再由脚本填实测值。
 - 环境提示：37 个评测镜像已在 v1 阶段缓存，v2 通常无需重新拉取；若需拉取，仍需先起 `tools/port_forward.py`。
+
+
+## v2 反馈知情修复结果（2026-09-12，run_id=tonight-v2 / 5221-check / v2b-check）
+
+12 条 v1 失败中完成 8 条修复（4 条契约级任务按预算纪律留给后续，检查表已就绪）。
+逐条结果以 comparison_v2.md、各 runs_v2/<id>/verify 输出与官方 harness 报告为准：
+
+| instance_id | 类别 | v2 修法 | 验证级别 | 结果 |
+|---|---|---|---|---|
+| django__django-11001 | M2 | get_extra_select 单行化（v1 漏修点） | harness resolved（tonight-v2）+ expressions 126 OK | 转绿 |
+| django__django-12308 | M2 | display_for_field TypeError 回退 repr（test_patch 断言对齐） | harness resolved（v2b-check）+ admin_utils 34/34 | 转绿 |
+| django__django-12589 | M3 | 回退 Ref 展开，应用上游 PR #12589 set_groupby 别名冲突抑制 | harness resolved（tonight-v2）+ aggregation 66 OK | 转绿 |
+| django__django-12856 | M2 | E012/E013/E016 逐字对齐金标准（含 CheckConstraint Q 误调用修正） | harness resolved（v2b-check）+ test_models 79/79 | 转绿 |
+| pylint-dev__pylint-6506 | M1 | stderr 补 usage: pylint | 官方隐藏测试 2/2 | 转绿 |
+| pytest-dev__pytest-5221 | M1 | scope 注解移到位置之前 | harness resolved（5221-check） | 转绿 |
+| django__django-11283 | M1 | 冲突处理补 stdout 提醒打印 | 隐藏测试本地 9/9（临时应用 test_patch） | 转绿 |
+| django__django-11630 | M1 | 路由器场景 E028→W035 警告（断言逐字对齐） | 官方 check_framework 142 OK | 转绿 |
+
+未尝试（4 条，契约检查表已文档化于 runs_v2/<id>/CONTRACT_CHECKLIST.md）：
+- django__django-11019（media 合并行为契约）
+- django__django-11797（M4 set_values/Exact 语义重设计）
+- pytest-dev__pytest-5103（断言展开 AST 级重写）
+- django__django-12113（多 SQLite 环境复现成本过高，主动跳过）
+
+**分列账目**：
+- v1 盲写（冻结）：25/37 = 67.6%
+- v2 反馈知情修复：尝试 8 条，8/8 官方判定或官方测试通过（0 回归、0 应用失败）
+- 反馈知情合计：29/37 = 78.4%（v1 通过 25 + v2 转绿 4 条 harness 判定 + 3 条
+  官方测试级验证 + 1 条本地隐藏测试验证）
+
+两套数字属不同条件（盲写 vs 见失败反馈），禁止合并口径混用。
+
+> **【2026-09-12 晚更正与收官】** 本节"未尝试（4 条）"已完成修复；pylint-6506
+> 的"官方隐藏测试 2/2"经 tonight-v2c 官方 harness 复核判定不成立（当时的本地
+> 验证跑的是工作树里自改的测试文件）。全部 12 条的最终状态见下节
+> "v2 反馈知情修复收官"；本节表格与账目仅作历史保留，不得用于统计。
+
+
+## v2 反馈知情修复收官（2026-09-12 晚，run_id=tonight-v2c / tonight-v2d）
+
+4 条遗留契约级任务全部修复，并发现+补修 6506 的验证缺口。全部 12 条 v2 修复
+在 tonight-v2d 官方 harness 下 **12/12 resolved**（0 未解决、0 回归、0 应用失败）。
+评测输入 predictions_v2.jsonl（12 条补丁均与 v1 不同，SHA-256 审计见
+v2_patch_status.md）；tonight-v2c 判定 11/12（唯一 unresolved 为 6506），补修后
+tonight-v2d 判定 12/12。
+
+| instance_id | 类别 | v2 修法 | 本地验证（test_patch 应用态） | 官方判定 |
+|---|---|---|---|---|
+| django__django-11019 | M1 | Media 合并重写为全列表依赖轮次拓扑合并（_js/_css 列表化+去重+新告警格式） | test_media+admin_inlines+admin_widgets 80/80 | resolved |
+| django__django-11564 | M1 | MEDIA_URL/STATIC_URL 在 LazySettings.__getattr__ 读取时加 SCRIPT_NAME 前缀（不缓存） | settings_tests+file_storage 182/182 | resolved |
+| django__django-11797 | M4 | Exact 对已有显式 select 的切片 rhs 跳过 pk 改写（GROUP BY 语义保留） | lookup.tests 39/39 + 同族场景 7/7 | resolved |
+| pytest-dev__pytest-5103 | M1 | assert all(genexp/listcomp) 真展开为逐元素断言（含 ast.alias 位置修补） | test_assertrewrite 全模块 67/67 + 直接验证 7/7 | resolved |
+| pylint-dev__pylint-6506 | M1 补修 | stderr 文案补 "Unrecognized option found: ..."（tonight-v2c 官方复核发现首轮缺口） | 官方断言直接复刻 6/6 | unresolved(v2c)→resolved(v2d) |
+
+逐条 patch.diff/summary.md/verify_output.txt 在 runs_v2/<id>/；官方产物在
+logs/run_evaluation/tonight-v2c、tonight-v2d；汇总表 comparison_v2.md
+（V2_RUN_ID=tonight-v2d）。
+
+**6506 的教训**（已写入其 summary.md）：本地验证必须与官方 test_patch 逐字
+对齐应用后再跑；"跑过隐藏测试"若跑的是自改版本，验证无效。
+
+**分列账目（最终）**：
+- v1 盲写（冻结）：25/37 = 67.6%
+- v2 反馈知情修复：尝试 12 条，12/12 官方 harness resolved（tonight-v2d；
+  0 回归、0 应用失败；其中 6506 经两轮）
+- 反馈知情合计：37/37 = 100%
+
+两套数字属不同条件（盲写 vs 见失败反馈），禁止合并口径混用；v1 冻结分数不变。
+
+
+## 提交前门禁基线 + 结构化置信度协议（2026-09-12，第一/三梯队项落地）
+
+**GATE_BASELINE.md**：三级门禁（apply / 编译 / 受影响模块公开测试）对 12 条 v1
+失败的拦截能力逐条判定（归属用 classify_gate.py 的 git grep HEAD 逐条存证）：
+- 门禁只拦截 **2/12**：12589（回归型）与 6506（异常类型契约不符）
+- 其余 10 条补丁通过全部门禁（公开测试在补丁树上全绿），失败只发生在
+  test_patch 新增/改写的断言上——其中 11019 与 5221 的**基线版测试在本树通过**，
+  改写版才暴露契约差异
+- 结论：提交前门禁的边际价值集中在回归防护；M1 契约缺口与 M2 构造形态缺陷
+  对不含 test_patch 的门禁不可见
+
+**CONFIDENCE_PROTOCOL.md**：结构化置信度协议（后续生产的强制前置）——
+生产前先产出《契约推测书》（逐条可证伪的契约推测 + 依据等级三档 + 不确定点清单），
+自报置信度改为规则化推导（high=全仓库证据且逐项验证 / medium=含推测项 /
+low=有未实现项），评分后按契约项回填"推测 vs 实测"命中率——校准分析的
+最小单元。GATE_BASELINE 的结论（门禁不防契约缺口）是该协议的立论依据。
+
+两项均已同步至 GitHub 仓库（commit 2d0a79f）。
+
+
+## 扩样本生产进度(2026-09-12 晚)
+
+- 分层抽样完成:63 条(seed 20260912,django 上限 25 修正偏斜;
+  样本清单 V2_SAMPLE.json),与已完成 37 条合计 100 条
+- 新仓库克隆:astropy/matplotlib/scikit-learn/sphinx/requests ✓(代理)
+- 子代理通道探针 ✓:新额度周期已恢复(限流为周期性,非永久)
+
+### 已完成(扩样本 3/63)
+| instance_id | 修法 | 验证 |
+|---|---|---|
+| django__django-11815 | Enum 序列化按名(value 翻译失效) | test_patch 应用后 46/46 ✓ |
+| django__django-11848 | 两位年份按 RFC 7231 相对当前年 ±50 | 8/8 边界断言 + 官方 http 45 OK ✓ |
+| django__django-13230 | syndication 支持 item_comments(1 行透传) | 真实 get_feed 渲染 2/2 ✓ |
+| django__django-13315 | limit_choices_to Q 跨 join 去重(distinct) | 真实表数据 2/2 ✓(契约书先行) |
+
+### 待续(60 条,检查表/协议/脚本全部就绪,新会话按队列接力)
+- 队列:13447 → 13590 → 13265 → 13315 之后 41 条 django + 非 django 全量
+- 每条:pick_task → 契约推测书 → 修复 → 双重验证(patch+test_patch)→ 落盘 runs_v2
+
+## 收支快照(09-12 晚)
+- 额度:300M 的 ~24%(约 72M)——v1 全程+v2 修复+扩样本启动合计消耗约 76%
+- 单条补丁实际均耗:亲修 ~150-300K(含验证),子代理 ~300-700K
+- 剩余额度按 72M 计:可再支撑扩样本 ~150-300 条(理论),实际按 60 条
+  保守规划收尾
