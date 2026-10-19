@@ -1,4 +1,4 @@
-﻿# SWE-bench Lite × 37: blind-written patches, official grading, and a frozen evidence manifest
+# SWE-bench Lite × 37: blind-written patches, official grading, and a frozen evidence manifest
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22720032.svg)](https://doi.org/10.5281/zenodo.22720032)
 
@@ -30,8 +30,12 @@ Every failure applied cleanly and failed on behaviour the benchmark's hidden tes
 | `MANIFEST_v1.json` / `MANIFEST_v1.md` | frozen evidence: SHA-256 of every artifact, dataset hash, image digests, environment versions |
 | `RESULTS.md` | original production log (kept verbatim) + a dated "measured" section |
 | `TECH_REPORT.md` | report skeleton: motivation, method, results, failure modes, implications |
-| `logs/run_evaluation/tonight/...` | official harness output per instance (`report.json`, `test_output.txt`, `eval.sh`) |
-| `V2_PLAN.md`, `runs_v2/` | the next condition (feedback-informed repair) — scaffolded, **not yet run** |
+| `logs/run_evaluation/tonight/...` | **v1 (blind)** official harness output per instance (`report.json`, `test_output.txt`, `eval.sh`) |
+| `logs/run_evaluation/tonight-v2{,b,c,d}/`, `5221-check/`, `v2b-check/` | **v2 (feedback-informed)** harness output, one directory per grading round — v2c and v2d are separate runs, not duplicates |
+| `runs_v2/<instance_id>/` | v2 patches (12 in-scope) + `summary.md`, plus `CONTRACT_CHECKLIST.md` where one was written |
+| `predictions_v2.jsonl` | the exact v2 harness input (12 patches), same format as `predictions_swebench.jsonl` |
+| `glm-5.3-zcode-campaign-v2.tonight-v2{c,d}.json` | per-round harness summary reports |
+| `V2_PLAN.md`, `V2_STATUS.md` | the v2 protocol and its status |
 | `predictions_swebench.jsonl` | exact harness input; patch text is SHA-256-identical to `runs/*/patch.diff` |
 | `tools/` | the network workarounds used to reach Docker Hub from WSL (TCP forwarder, dockerd proxy drop-in) |
 | `notes/` | raw working log of the image-channel attempts and the pre-evaluation report draft |
@@ -128,11 +132,13 @@ rewritten, so their recorded hashes still hold.
 2. **The failure split is actionable.** 7 of 12 failures are contract details a local self-test cannot
    see; 3 are defects a single run would have caught. Those two need different fixes.
 3. **The protocol is auditable.** Blind-write discipline, frozen manifest, and an explicit separation
-   between the blind condition (v1) and the feedback-informed condition (v2, not yet run).
+   between the blind condition (v1, `run_id=tonight`, 25/37) and the feedback-informed condition
+   (v2, `run_id=tonight-v2d`, 12/12 on the 12 previously-unresolved instances). The two conditions are
+   reported separately and never merged.
 
 ## Not yet done
 
-- `v2-repair` (the 12 failures, with an output-contract checklist) and `v1-blind-repeat` (variance floor).
+- `v1-blind-repeat` (variance floor): how much of the v1/v2 gap is repair skill versus run-to-run noise.
 - Per-instance upstream diff comparison — until then, no claim about "how this differs from upstream".
 
 ## Licence and attribution

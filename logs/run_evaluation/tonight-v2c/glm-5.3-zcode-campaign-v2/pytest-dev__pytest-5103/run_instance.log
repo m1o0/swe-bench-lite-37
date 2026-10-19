@@ -1,0 +1,191 @@
+2026-09-12 22:51:01,958 - INFO - Creating container for pytest-dev__pytest-5103...
+2026-09-12 22:51:02,036 - INFO - Container for pytest-dev__pytest-5103 created: 15ba5a262f0645c812770f8edcc0cdd0016e35e34c7ae718779c4b436e11516f
+2026-09-12 22:51:02,208 - INFO - Container for pytest-dev__pytest-5103 started: 15ba5a262f0645c812770f8edcc0cdd0016e35e34c7ae718779c4b436e11516f
+2026-09-12 22:51:02,212 - INFO - Intermediate patch for pytest-dev__pytest-5103 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/pytest-dev__pytest-5103/patch.diff, now applying to container...
+2026-09-12 22:51:02,325 - INFO - >>>>> Applied Patch:
+Checking patch src/_pytest/assertion/rewrite.py...
+warning: src/_pytest/assertion/rewrite.py has type 100755, expected 100644
+Applied patch src/_pytest/assertion/rewrite.py cleanly.
+
+2026-09-12 22:51:02,523 - INFO - Git diff before:
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index 2903b899..edffb8fd 100755
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -702,6 +702,13 @@ class AssertionRewriter(ast.NodeVisitor):
+         imports = [
+             ast.Import([alias], lineno=lineno, col_offset=0) for alias in aliases
+         ]
++        for alias in aliases:
++            # Python 3.10+ requires position information on alias nodes;
++            # older interpreters ignore the extra attributes.
++            alias.lineno = lineno
++            alias.col_offset = 0
++            alias.end_lineno = lineno
++            alias.end_col_offset = 0
+         mod.body[pos:pos] = imports
+         # Collect asserts.
+         nodes = [mod]
+@@ -811,6 +818,56 @@ class AssertionRewriter(ast.NodeVisitor):
+         res = self.assign(node)
+         return res, self.explanation_param(self.display(res))
+ 
++    def _try_unroll_all(self, assert_):
++        """Rewrite ``assert all(<generator/list comprehension>)`` into a loop
++        of per-element asserts so a failure explanation shows the first
++        failing element (e.g. "0 == 1" or "where False = check_even(1)").
++
++        Returns the replacement statements, or None when the assert does not
++        match a supported unrollable shape (it is then rewritten normally).
++        """
++        call = assert_.test
++        if assert_.msg is not None or not (
++            isinstance(call, ast.Call)
++            and isinstance(call.func, ast.Name)
++            and call.func.id == "all"
++            and len(call.args) == 1
++            and not call.keywords
++        ):
++            return None
++        comp = call.args[0]
++        if not isinstance(comp, (ast.GeneratorExp, ast.ListComp)):
++            return None
++        if len(comp.generators) != 1 or comp.generators[0].ifs:
++            return None
++        target = comp.generators[0].target
++        if not isinstance(target, ast.Name):
++            return None
++        # Skip shapes where the element expression could shadow the loop
++        # variable with its own scoped names.
++        for node in ast.walk(comp.elt):
++            if isinstance(
++                node, (ast.Lambda, ast.GeneratorExp, ast.ListComp, ast.SetComp, ast.DictComp)
++            ):
++                return None
++        # The loop variable would otherwise leak into the enclosing scope;
++        # rename it to a unique temporary before building the loop.
++        self.variable_counter = itertools.count()
++        iter_var = "@py_unroll" + str(next(self.variable_counter))
++        for node in ast.walk(comp.elt):
++            if isinstance(node, ast.Name) and node.id == target.id:
++                node.id = iter_var
++        inner = ast.Assert(comp.elt, None)
++        set_location(inner, assert_.lineno, assert_.col_offset)
++        loop = ast.For(
++            ast.Name(iter_var, ast.Store()),
++            comp.generators[0].iter,
++            self.visit_Assert(inner),
++            [],
++        )
++        set_location(loop, assert_.lineno, assert_.col_offset)
++        return [loop]
++
+     def visit_Assert(self, assert_):
+         """Return the AST statements to replace the ast.Assert instance.
+ 
+@@ -820,6 +877,9 @@ class AssertionRewriter(ast.NodeVisitor):
+         the expression is false.
+ 
+         """
++        unrolled = self._try_unroll_all(assert_)
++        if unrolled is not None:
++            return unrolled
+         if isinstance(assert_.test, ast.Tuple) and len(assert_.test.elts) >= 1:
+             from _pytest.warning_types import PytestAssertRewriteWarning
+             import warnings
+2026-09-12 22:51:02,528 - INFO - Eval script for pytest-dev__pytest-5103 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/pytest-dev__pytest-5103/eval.sh; copying to container...
+2026-09-12 22:51:40,422 - INFO - Test runtime: 37.84 seconds
+2026-09-12 22:51:40,427 - INFO - Test output for pytest-dev__pytest-5103 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/pytest-dev__pytest-5103/test_output.txt
+2026-09-12 22:51:40,471 - INFO - Git diff after:
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index 2903b899..edffb8fd 100755
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -702,6 +702,13 @@ class AssertionRewriter(ast.NodeVisitor):
+         imports = [
+             ast.Import([alias], lineno=lineno, col_offset=0) for alias in aliases
+         ]
++        for alias in aliases:
++            # Python 3.10+ requires position information on alias nodes;
++            # older interpreters ignore the extra attributes.
++            alias.lineno = lineno
++            alias.col_offset = 0
++            alias.end_lineno = lineno
++            alias.end_col_offset = 0
+         mod.body[pos:pos] = imports
+         # Collect asserts.
+         nodes = [mod]
+@@ -811,6 +818,56 @@ class AssertionRewriter(ast.NodeVisitor):
+         res = self.assign(node)
+         return res, self.explanation_param(self.display(res))
+ 
++    def _try_unroll_all(self, assert_):
++        """Rewrite ``assert all(<generator/list comprehension>)`` into a loop
++        of per-element asserts so a failure explanation shows the first
++        failing element (e.g. "0 == 1" or "where False = check_even(1)").
++
++        Returns the replacement statements, or None when the assert does not
++        match a supported unrollable shape (it is then rewritten normally).
++        """
++        call = assert_.test
++        if assert_.msg is not None or not (
++            isinstance(call, ast.Call)
++            and isinstance(call.func, ast.Name)
++            and call.func.id == "all"
++            and len(call.args) == 1
++            and not call.keywords
++        ):
++            return None
++        comp = call.args[0]
++        if not isinstance(comp, (ast.GeneratorExp, ast.ListComp)):
++            return None
++        if len(comp.generators) != 1 or comp.generators[0].ifs:
++            return None
++        target = comp.generators[0].target
++        if not isinstance(target, ast.Name):
++            return None
++        # Skip shapes where the element expression could shadow the loop
++        # variable with its own scoped names.
++        for node in ast.walk(comp.elt):
++            if isinstance(
++                node, (ast.Lambda, ast.GeneratorExp, ast.ListComp, ast.SetComp, ast.DictComp)
++            ):
++                return None
++        # The loop variable would otherwise leak into the enclosing scope;
++        # rename it to a unique temporary before building the loop.
++        self.variable_counter = itertools.count()
++        iter_var = "@py_unroll" + str(next(self.variable_counter))
++        for node in ast.walk(comp.elt):
++            if isinstance(node, ast.Name) and node.id == target.id:
++                node.id = iter_var
++        inner = ast.Assert(comp.elt, None)
++        set_location(inner, assert_.lineno, assert_.col_offset)
++        loop = ast.For(
++            ast.Name(iter_var, ast.Store()),
++            comp.generators[0].iter,
++            self.visit_Assert(inner),
++            [],
++        )
++        set_location(loop, assert_.lineno, assert_.col_offset)
++        return [loop]
++
+     def visit_Assert(self, assert_):
+         """Return the AST statements to replace the ast.Assert instance.
+ 
+@@ -820,6 +877,9 @@ class AssertionRewriter(ast.NodeVisitor):
+         the expression is false.
+ 
+         """
++        unrolled = self._try_unroll_all(assert_)
++        if unrolled is not None:
++            return unrolled
+         if isinstance(assert_.test, ast.Tuple) and len(assert_.test.elts) >= 1:
+             from _pytest.warning_types import PytestAssertRewriteWarning
+             import warnings
+2026-09-12 22:51:40,472 - INFO - Grading answer for pytest-dev__pytest-5103...
+2026-09-12 22:51:40,477 - INFO - report: {'pytest-dev__pytest-5103': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['testing/test_assertrewrite.py::TestAssertionRewrite::test_unroll_expression'], 'failure': []}, 'PASS_TO_PASS': {'success': ['testing/test_assertrewrite.py::TestAssertionRewrite::test_place_initial_imports', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_dont_rewrite', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_name', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_dont_rewrite_if_hasattr_fails', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assert_already_has_message', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_boolop', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_short_circuit_evaluation', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_unary_op', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_binary_op', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_boolop_percent', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_call', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_attribute', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_comparisons', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_len', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_custom_reprcompare', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assert_raising_nonzero_in_comparison', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_formatchar', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_custom_repr', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_custom_repr_non_ascii', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_read_pyc', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_dont_rewrite_plugin', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message_multiline', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message_tuple', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message_expr', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message_escape', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_messages_bytes', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_at_operator_issue1290', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_starred_with_side_effect', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_for_loop', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_pycache_is_a_file', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_pycache_is_readonly', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_zipfile', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_readonly', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_dont_write_bytecode', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_orphaned_pyc_file', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_pyc_vs_pyo', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_package', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_translate_newlines', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_package_without__init__py', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_rewrite_warning', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_rewrite_module_imported_from_conftest', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_remember_rewritten_modules', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_rewrite_warning_using_pytest_plugins', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_rewrite_warning_using_pytest_plugins_env_var', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_loader_is_package_false_for_module', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_loader_is_package_true_for_package', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_sys_meta_path_munged', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_write_pyc', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_resources_provider_for_loader', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_reload_is_same', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_reload_reloads', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_get_data_support', 'testing/test_assertrewrite.py::test_issue731', 'testing/test_assertrewrite.py::TestIssue925::test_simple_case', 'testing/test_assertrewrite.py::TestIssue925::test_long_case', 'testing/test_assertrewrite.py::TestIssue925::test_many_brackets', 'testing/test_assertrewrite.py::TestIssue2121::test_rewrite_python_files_contain_subdirs', 'testing/test_assertrewrite.py::test_source_mtime_long_long[-1]', 'testing/test_assertrewrite.py::test_source_mtime_long_long[1]', 'testing/test_assertrewrite.py::test_rewrite_infinite_recursion', 'testing/test_assertrewrite.py::TestEarlyRewriteBailout::test_basic', 'testing/test_assertrewrite.py::TestEarlyRewriteBailout::test_pattern_contains_subdirectories', 'testing/test_assertrewrite.py::TestEarlyRewriteBailout::test_cwd_changed'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for pytest-dev__pytest-5103: resolved: True
+2026-09-12 22:51:40,480 - INFO - Attempting to stop container sweb.eval.pytest-dev__pytest-5103.tonight-v2c...
+2026-09-12 22:51:53,922 - INFO - Container sweb.eval.pytest-dev__pytest-5103.tonight-v2c stopped successfully.
+2026-09-12 22:51:53,922 - INFO - Attempting to remove container sweb.eval.pytest-dev__pytest-5103.tonight-v2c...
+2026-09-12 22:51:54,080 - INFO - Container sweb.eval.pytest-dev__pytest-5103.tonight-v2c removed successfully.

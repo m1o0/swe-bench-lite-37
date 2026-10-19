@@ -1,0 +1,49 @@
+# pytest-dev__pytest-5103 — v2 验证记录(2026-09-12)
+
+## 本地运行前提(py3.10 环境使能,不属于补丁语义)
+- 临时生成 src/_pytest/_version.py(version="4.1.0"):源码树无 setuptools_scm
+  元数据时 pytest.__version__ 为 "unknown",会被仓库 tox.ini [pytest]
+  minversion=2.0 拦截。验证后已删除。
+- alias 位置信息修补已包含在 patch.diff 内(run() 中给 @py_builtins /
+  @pytest_ar 的 ast.alias 补 lineno/col_offset):py3.10 要求 alias 带位置,
+  否则断言重写后的模块 compile 直接 TypeError(基线树在 py3.10 连
+  visit_Assert 全模块运行都无法完成,实测 60 failed/7 passed);
+  py3.6(官方 harness 镜像的 Python)上这些属性是惰性的,无行为影响。
+- PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 + -p no:anyio:系统 anyio 的 pytest11 入口
+  在 4.1 源码树上 import 崩溃(_pytest.scope 不存在),会毒化全部 testdir
+  内部运行(40 failed 的假象来源)。
+- -c tools/v2c_pytest.ini(addopts=-p pytester):绕开仓库 tox.ini 的
+  filterwarnings=error(在 py3.10 上会把 find_module 回退 ImportWarning 升级
+  为错误)。官方环境 py3.6 无此冲突。
+
+## 命令与原始输出
+1. 全模块(test_patch 应用态,含 4 个隐藏测试):
+   cd /mnt/d/mio/worktrees/pytest-dev__pytest-5103 && PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+   PYTHONPATH=src python3 -m pytest testing/test_assertrewrite.py -p no:anyio \
+   -c <EXP_ROOT_POSIX>/tools/v2c_pytest.ini --tb=no -q
+
+   67 passed, 5 skipped in 17.92 seconds
+
+   覆盖:TestAssertionRewrite::test_unroll_expression / test_unroll_generator /
+   test_unroll_list_comprehension(3 个 F2P 隐藏测试)+ test_for_loop(test_patch
+   新增的 P2P)+ 全部既有用例,0 failed。
+   (对照:v1 官方日志中前 3 项 FAILED;基线无 alias 修补时 py3.10 全模块无法运行。)
+
+2. 门禁单直接验证(getmsg 同型 + 语义保持,runs_v2/pytest-dev__pytest-5103/verify_v2_direct.py):
+   python3 verify_v2_direct.py
+
+   PASS msg contains '0 == 1' ['assert 0 == 1']
+   PASS msg has 'assert False' + 'where False = check_even(1)'
+   PASS side effect: each element evaluated exactly once (pass case)
+   PASS short-circuit: stops at first False
+   PASS comprehension target does not leak
+   PASS listcomp: msg has 'where False = check_even(1)'
+   PASS fallback (comprehension with if): normal rewrite still works
+   SUMMARY: 7/7 passed
+
+## 门禁单对照
+- 展开产物:消息含逐元素比较("0 == 1")与调用解释("where False = check_even(1)")✓
+- 短路语义:首 False 即停,不改变 Python 语义 ✓
+- 副作用:每元素只消费一次 ✓
+- 多形态:生成器表达式与列表推导均展开;带 if/多生成器/Lambda 等形态回退原改写 ✓
+- 回归:testing/test_assertrewrite.py 全模块 67/67(5 skipped 为 py3 环境跳过)✓

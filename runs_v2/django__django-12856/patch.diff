@@ -1,0 +1,80 @@
+diff --git a/django/db/models/base.py b/django/db/models/base.py
+index 7bb3fa4706..7ca0f2317b 100644
+--- a/django/db/models/base.py
++++ b/django/db/models/base.py
+@@ -1926,6 +1926,15 @@ class Model(metaclass=ModelBase):
+                         id='models.W038',
+                     )
+                 )
++        errors.extend(
++            error
++            for constraint in cls._meta.constraints
++            for error in (
++                constraint.check(cls)
++                if callable(getattr(type(constraint), 'check', None))
++                else []
++            )
++        )
+         return errors
+ 
+ 
+diff --git a/django/db/models/constraints.py b/django/db/models/constraints.py
+index 64bd60484e..c8ff2d076e 100644
+--- a/django/db/models/constraints.py
++++ b/django/db/models/constraints.py
+@@ -1,5 +1,6 @@
+ from enum import Enum
+ 
++from django.core import checks, exceptions
+ from django.db.models.query_utils import Q
+ from django.db.models.sql.query import Query
+ 
+@@ -95,6 +96,48 @@ class UniqueConstraint(BaseConstraint):
+         self.deferrable = deferrable
+         super().__init__(name)
+ 
++    def check(self, model):
++        return self._check_fields(model)
++
++    def _check_fields(self, model):
++        errors = []
++        concrete_local_names = [f.name for f in model._meta.local_fields] + [
++            f.attname for f in model._meta.local_fields
++        ]
++        for field_name in self.fields:
++            try:
++                field = model._meta.get_field(field_name)
++            except exceptions.FieldDoesNotExist:
++                errors.append(
++                    checks.Error(
++                        "'constraints' refers to the nonexistent field '%s'." % field_name,
++                        obj=model,
++                        id='models.E012',
++                    )
++                )
++                continue
++            if field.many_to_many:
++                errors.append(
++                    checks.Error(
++                        "'constraints' refers to a ManyToManyField '%s', but "
++                        "ManyToManyFields are not permitted in 'constraints'." % field_name,
++                        obj=model,
++                        id='models.E013',
++                    )
++                )
++                continue
++            if field_name not in concrete_local_names:
++                errors.append(
++                    checks.Error(
++                        "'constraints' refers to field '%s' which is not local "
++                        "to model '%s'." % (field_name, model.__name__),
++                        hint='This issue may be caused by multi-table inheritance.',
++                        obj=model,
++                        id='models.E016',
++                    )
++                )
++        return errors
++
+     def _get_condition_sql(self, model, schema_editor):
+         if self.condition is None:
+             return None

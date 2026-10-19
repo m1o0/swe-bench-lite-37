@@ -1,0 +1,44 @@
+# django__django-11019 — v2 验证记录(2026-09-12)
+
+## 命令与原始输出(WSL 实跑)
+预备:git apply runs_v2/django__django-11019/test_patch.txt(临时应用隐藏测试,
+验证后 git checkout -- tests/ 还原)。
+
+wsl.exe bash <EXP_ROOT_POSIX>/run_wsl_tests.sh django__django-11019 \
+  forms_tests.tests.test_media admin_inlines.tests admin_widgets.test_autocomplete_widget
+
+Creating test database for alias 'default'...
+..........................................................................ssssss
+----------------------------------------------------------------------
+Ran 80 tests in 2.653s
+
+OK (skipped=6)
+Destroying test database for alias 'default'...
+Testing against Django installed in '/mnt/d/mio/worktrees/django__django-11019/django'
+System check identified no issues (0 silenced).
+
+(首轮运行曾出现 2 errors:merge 把同一列表内的重复元素当成自依赖边
+css1→css1 而误报冲突环,已修复——自边不入依赖图;修复后 80/80。)
+
+## 覆盖说明
+- forms_tests.tests.test_media 全模块(门禁单要求,非仅目标用例):
+  * test_construction:repr 为列表形态 ✓
+  * test_media_deduplication(隐藏新增):单对象去重 ✓
+  * test_combine/inheritance/property/form_media:渲染顺序按新算法
+    (js4 先于 js3-secure、/other/path 先于 css2 等)✓
+  * test_merge(隐藏改写):([1,2],[3,4])→[1,3,2,4]、7 列表
+    →[1,5,8,2,6,3,7,9]、()→[]、单列表、重复列表 ✓
+  * test_merge_warning(隐藏改写):消息
+    'Detected duplicate Media files in an opposite order: [1, 2], [2, 1]' ✓
+  * test_merge_js_three_way / test_merge_js_three_way2 / test_merge_css_three_way
+    (隐藏改写):三轮拓扑合并语义 ✓
+- admin_inlines.tests(含 test_inline_media_only_inline 改写后的 _js 顺序)✓
+- admin_widgets.test_autocomplete_widget(_js 与 list(expected_files) 比较)✓
+
+## 门禁单对照
+1. 正例(声明顺序保留):test_merge 全部参数格 + three_way 系列 ✓
+2. 反例(依赖倒置告警):test_merge_warning 新格式 ✓(冲突时返回
+   按首次出现序拼接的剩余项,merge([1,2],[2,1])→[1,2])
+3. 回归:forms_tests.tests.test_media 全模块 + admin_inlines +
+   admin_widgets ✓
+4. 本文件即命令与原始输出落盘 ✓

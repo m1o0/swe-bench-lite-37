@@ -1,0 +1,47 @@
+diff --git a/django/conf/__init__.py b/django/conf/__init__.py
+index b32e56184d..ad4b31fda0 100644
+--- a/django/conf/__init__.py
++++ b/django/conf/__init__.py
+@@ -12,6 +12,7 @@ import time
+ import traceback
+ import warnings
+ from pathlib import Path
++from urllib.parse import urlsplit
+ 
+ import django
+ from django.conf import global_settings
+@@ -21,6 +22,23 @@ from django.utils.functional import LazyObject, empty
+ 
+ ENVIRONMENT_VARIABLE = "DJANGO_SETTINGS_MODULE"
+ 
++
++def _add_script_name(val):
++    # Don't add the SCRIPT_NAME prefix to absolute paths or to URLs with a
++    # known scheme; prefix relative paths, invalid URLs and blank values.
++    if val.startswith('/') or urlsplit(val).scheme in ('http', 'https', 'ftp', 'ftps'):
++        return val
++    from django.urls import get_script_prefix
++    script_name = get_script_prefix()
++    if not script_name:
++        return val
++    if script_name != '/':
++        script_name = script_name.rstrip('/') + '/'
++    if not val:
++        # A blank value is only prefixed when a non-default script name is set.
++        return script_name if script_name != '/' else val
++    return script_name + val
++
+ PASSWORD_RESET_TIMEOUT_DAYS_DEPRECATED_MSG = (
+     'The PASSWORD_RESET_TIMEOUT_DAYS setting is deprecated. Use '
+     'PASSWORD_RESET_TIMEOUT instead.'
+@@ -75,6 +93,10 @@ class LazySettings(LazyObject):
+         if self._wrapped is empty:
+             self._setup(name)
+         val = getattr(self._wrapped, name)
++        if name in ('MEDIA_URL', 'STATIC_URL'):
++            # The SCRIPT_NAME prefix is dynamic (per request/thread), so these
++            # settings are never cached in self.__dict__.
++            return _add_script_name(val) if isinstance(val, str) else val
+         self.__dict__[name] = val
+         return val
+ 

@@ -1,0 +1,85 @@
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index 2903b8995..edffb8fd4 100644
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -702,6 +702,13 @@ class AssertionRewriter(ast.NodeVisitor):
+         imports = [
+             ast.Import([alias], lineno=lineno, col_offset=0) for alias in aliases
+         ]
++        for alias in aliases:
++            # Python 3.10+ requires position information on alias nodes;
++            # older interpreters ignore the extra attributes.
++            alias.lineno = lineno
++            alias.col_offset = 0
++            alias.end_lineno = lineno
++            alias.end_col_offset = 0
+         mod.body[pos:pos] = imports
+         # Collect asserts.
+         nodes = [mod]
+@@ -811,6 +818,56 @@ class AssertionRewriter(ast.NodeVisitor):
+         res = self.assign(node)
+         return res, self.explanation_param(self.display(res))
+ 
++    def _try_unroll_all(self, assert_):
++        """Rewrite ``assert all(<generator/list comprehension>)`` into a loop
++        of per-element asserts so a failure explanation shows the first
++        failing element (e.g. "0 == 1" or "where False = check_even(1)").
++
++        Returns the replacement statements, or None when the assert does not
++        match a supported unrollable shape (it is then rewritten normally).
++        """
++        call = assert_.test
++        if assert_.msg is not None or not (
++            isinstance(call, ast.Call)
++            and isinstance(call.func, ast.Name)
++            and call.func.id == "all"
++            and len(call.args) == 1
++            and not call.keywords
++        ):
++            return None
++        comp = call.args[0]
++        if not isinstance(comp, (ast.GeneratorExp, ast.ListComp)):
++            return None
++        if len(comp.generators) != 1 or comp.generators[0].ifs:
++            return None
++        target = comp.generators[0].target
++        if not isinstance(target, ast.Name):
++            return None
++        # Skip shapes where the element expression could shadow the loop
++        # variable with its own scoped names.
++        for node in ast.walk(comp.elt):
++            if isinstance(
++                node, (ast.Lambda, ast.GeneratorExp, ast.ListComp, ast.SetComp, ast.DictComp)
++            ):
++                return None
++        # The loop variable would otherwise leak into the enclosing scope;
++        # rename it to a unique temporary before building the loop.
++        self.variable_counter = itertools.count()
++        iter_var = "@py_unroll" + str(next(self.variable_counter))
++        for node in ast.walk(comp.elt):
++            if isinstance(node, ast.Name) and node.id == target.id:
++                node.id = iter_var
++        inner = ast.Assert(comp.elt, None)
++        set_location(inner, assert_.lineno, assert_.col_offset)
++        loop = ast.For(
++            ast.Name(iter_var, ast.Store()),
++            comp.generators[0].iter,
++            self.visit_Assert(inner),
++            [],
++        )
++        set_location(loop, assert_.lineno, assert_.col_offset)
++        return [loop]
++
+     def visit_Assert(self, assert_):
+         """Return the AST statements to replace the ast.Assert instance.
+ 
+@@ -820,6 +877,9 @@ class AssertionRewriter(ast.NodeVisitor):
+         the expression is false.
+ 
+         """
++        unrolled = self._try_unroll_all(assert_)
++        if unrolled is not None:
++            return unrolled
+         if isinstance(assert_.test, ast.Tuple) and len(assert_.test.elts) >= 1:
+             from _pytest.warning_types import PytestAssertRewriteWarning
+             import warnings

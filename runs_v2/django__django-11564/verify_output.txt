@@ -1,0 +1,29 @@
+# django__django-11564 — v2 验证记录(2026-09-12)
+
+## 命令
+1. 预备:git apply runs_v2/django__django-11564/test_patch.txt(临时应用隐藏测试,验证后 git checkout -- tests/ 还原)
+2. wsl.exe bash <EXP_ROOT_POSIX>/run_wsl_tests.sh django__django-11564 settings_tests file_storage
+
+## 原始输出(WSL 实跑,test_patch 应用态)
+Creating test database for alias 'default'...
+......................................................................................................................................................................................
+----------------------------------------------------------------------
+Ran 182 tests in 2.097s
+
+OK
+Destroying test database for alias 'default'...
+Testing against Django installed in '/mnt/d/mio/worktrees/django__django-11564/django'
+System check identified no issues (0 silenced).
+
+## 覆盖说明
+- settings_tests:130 项,含隐藏新增 MediaURLStaticURLPrefixTest::test_not_prefixed /
+  test_add_script_name_prefix 的全部参数格(subTest 不单独计数):
+  * 不加前缀:'/path/'、'http://myhost.com/path/'、None × script_name ∈
+    ['/somesubpath', '/somesubpath/', '/', '', None]
+  * 加前缀:('/somesubpath','path/')→'/somesubpath/path/';
+    ('/somesubpath/','path/')→'/somesubpath/path/';('/','path/')→'/path/';
+    ('/somesubpath/','htp://myhost.com/path/')→'/somesubpath/htp://myhost.com/path/';
+    ('/somesubpath/','')→'/somesubpath/'
+- file_storage:52 项,含 test_patch 改写的 test_setting_changed
+  (MEDIA_URL '/overridden_media_url/',默认 script prefix '/' 下相对值加前缀的行为)
+- 验证后 tests/ 已还原,patch.diff 仅含 django/conf/__init__.py。

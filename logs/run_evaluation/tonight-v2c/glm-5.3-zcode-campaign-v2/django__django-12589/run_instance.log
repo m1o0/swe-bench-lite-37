@@ -1,0 +1,85 @@
+2026-09-12 22:50:37,507 - INFO - Creating container for django__django-12589...
+2026-09-12 22:50:37,566 - INFO - Container for django__django-12589 created: 1d5a5ed0175407a0117db3859eb28042a837f73c51cce09cfeb0d6c3748aa3cd
+2026-09-12 22:50:37,709 - INFO - Container for django__django-12589 started: 1d5a5ed0175407a0117db3859eb28042a837f73c51cce09cfeb0d6c3748aa3cd
+2026-09-12 22:50:37,713 - INFO - Intermediate patch for django__django-12589 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/django__django-12589/patch.diff, now applying to container...
+2026-09-12 22:50:37,811 - INFO - >>>>> Applied Patch:
+Checking patch django/db/models/sql/query.py...
+warning: django/db/models/sql/query.py has type 100755, expected 100644
+Applied patch django/db/models/sql/query.py cleanly.
+
+2026-09-12 22:50:39,536 - INFO - Git diff before:
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index 78c4f47b5b..907bf1a95c 100755
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -1927,6 +1927,18 @@ class Query(BaseExpression):
+         primary key, and the query would be equivalent, the optimization
+         will be made automatically.
+         """
++        # Column names from JOINs to check collisions with aliases.
++        if allow_aliases:
++            column_names = set()
++            seen_models = set()
++            for join in list(self.alias_map.values())[1:]:  # Skip base table.
++                model = join.join_field.related_model
++                if model not in seen_models:
++                    column_names.update({
++                        field.column
++                        for field in model._meta.local_concrete_fields
++                    })
++                    seen_models.add(model)
+         group_by = list(self.select)
+         if self.annotation_select:
+             for alias, annotation in self.annotation_select.items():
+@@ -1940,7 +1952,7 @@ class Query(BaseExpression):
+                     warnings.warn(msg, category=RemovedInDjango40Warning)
+                     group_by_cols = annotation.get_group_by_cols()
+                 else:
+-                    if not allow_aliases:
++                    if not allow_aliases or alias in column_names:
+                         alias = None
+                     group_by_cols = annotation.get_group_by_cols(alias=alias)
+                 group_by.extend(group_by_cols)
+2026-09-12 22:50:39,540 - INFO - Eval script for django__django-12589 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/django__django-12589/eval.sh; copying to container...
+2026-09-12 22:50:46,575 - INFO - Test runtime: 6.98 seconds
+2026-09-12 22:50:46,588 - INFO - Test output for django__django-12589 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/django__django-12589/test_output.txt
+2026-09-12 22:50:46,640 - INFO - Git diff after:
+diff --git a/django/db/models/sql/query.py b/django/db/models/sql/query.py
+index 78c4f47b5b..907bf1a95c 100755
+--- a/django/db/models/sql/query.py
++++ b/django/db/models/sql/query.py
+@@ -1927,6 +1927,18 @@ class Query(BaseExpression):
+         primary key, and the query would be equivalent, the optimization
+         will be made automatically.
+         """
++        # Column names from JOINs to check collisions with aliases.
++        if allow_aliases:
++            column_names = set()
++            seen_models = set()
++            for join in list(self.alias_map.values())[1:]:  # Skip base table.
++                model = join.join_field.related_model
++                if model not in seen_models:
++                    column_names.update({
++                        field.column
++                        for field in model._meta.local_concrete_fields
++                    })
++                    seen_models.add(model)
+         group_by = list(self.select)
+         if self.annotation_select:
+             for alias, annotation in self.annotation_select.items():
+@@ -1940,7 +1952,7 @@ class Query(BaseExpression):
+                     warnings.warn(msg, category=RemovedInDjango40Warning)
+                     group_by_cols = annotation.get_group_by_cols()
+                 else:
+-                    if not allow_aliases:
++                    if not allow_aliases or alias in column_names:
+                         alias = None
+                     group_by_cols = annotation.get_group_by_cols(alias=alias)
+                 group_by.extend(group_by_cols)
+2026-09-12 22:50:46,640 - INFO - Grading answer for django__django-12589...
+2026-09-12 22:50:46,655 - INFO - report: {'django__django-12589': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_aggregation_subquery_annotation_values_collision (aggregation.tests.AggregateTestCase)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_add_implementation (aggregation.tests.AggregateTestCase)', 'test_aggregate_alias (aggregation.tests.AggregateTestCase)', 'test_aggregate_annotation (aggregation.tests.AggregateTestCase)', 'test_aggregate_in_order_by (aggregation.tests.AggregateTestCase)', 'test_aggregate_multi_join (aggregation.tests.AggregateTestCase)', 'test_aggregate_over_complex_annotation (aggregation.tests.AggregateTestCase)', 'test_aggregation_exists_annotation (aggregation.tests.AggregateTestCase)', 'test_aggregation_expressions (aggregation.tests.AggregateTestCase)', 'test_aggregation_order_by_not_selected_annotation_values (aggregation.tests.AggregateTestCase)', 'Subquery annotations are excluded from the GROUP BY if they are', 'test_aggregation_subquery_annotation_exists (aggregation.tests.AggregateTestCase)', 'test_aggregation_subquery_annotation_multivalued (aggregation.tests.AggregateTestCase)', 'test_aggregation_subquery_annotation_related_field (aggregation.tests.AggregateTestCase)', 'test_aggregation_subquery_annotation_values (aggregation.tests.AggregateTestCase)', 'test_annotate_basic (aggregation.tests.AggregateTestCase)', 'test_annotate_defer (aggregation.tests.AggregateTestCase)', 'test_annotate_defer_select_related (aggregation.tests.AggregateTestCase)', 'test_annotate_m2m (aggregation.tests.AggregateTestCase)', 'test_annotate_ordering (aggregation.tests.AggregateTestCase)', 'test_annotate_over_annotate (aggregation.tests.AggregateTestCase)', 'test_annotate_values (aggregation.tests.AggregateTestCase)', 'test_annotate_values_aggregate (aggregation.tests.AggregateTestCase)', 'test_annotate_values_list (aggregation.tests.AggregateTestCase)', 'test_annotated_aggregate_over_annotated_aggregate (aggregation.tests.AggregateTestCase)', 'test_annotation (aggregation.tests.AggregateTestCase)', 'test_annotation_expressions (aggregation.tests.AggregateTestCase)', 'test_arguments_must_be_expressions (aggregation.tests.AggregateTestCase)', 'test_avg_decimal_field (aggregation.tests.AggregateTestCase)', 'test_avg_duration_field (aggregation.tests.AggregateTestCase)', 'test_backwards_m2m_annotate (aggregation.tests.AggregateTestCase)', 'test_combine_different_types (aggregation.tests.AggregateTestCase)', 'test_complex_aggregations_require_kwarg (aggregation.tests.AggregateTestCase)', 'test_complex_values_aggregation (aggregation.tests.AggregateTestCase)', 'test_count (aggregation.tests.AggregateTestCase)', 'test_count_distinct_expression (aggregation.tests.AggregateTestCase)', 'test_count_star (aggregation.tests.AggregateTestCase)', 'test_dates_with_aggregation (aggregation.tests.AggregateTestCase)', 'test_decimal_max_digits_has_no_effect (aggregation.tests.AggregateTestCase)', 'test_distinct_on_aggregate (aggregation.tests.AggregateTestCase)', 'test_empty_aggregate (aggregation.tests.AggregateTestCase)', 'test_even_more_aggregate (aggregation.tests.AggregateTestCase)', 'test_expression_on_aggregation (aggregation.tests.AggregateTestCase)', 'test_filter_aggregate (aggregation.tests.AggregateTestCase)', 'test_filtering (aggregation.tests.AggregateTestCase)', 'test_fkey_aggregate (aggregation.tests.AggregateTestCase)', 'test_group_by_exists_annotation (aggregation.tests.AggregateTestCase)', 'test_group_by_subquery_annotation (aggregation.tests.AggregateTestCase)', 'test_grouped_annotation_in_group_by (aggregation.tests.AggregateTestCase)', 'test_missing_output_field_raises_error (aggregation.tests.AggregateTestCase)', 'test_more_aggregation (aggregation.tests.AggregateTestCase)', 'test_multi_arg_aggregate (aggregation.tests.AggregateTestCase)', 'test_multiple_aggregates (aggregation.tests.AggregateTestCase)', 'test_non_grouped_annotation_not_in_group_by (aggregation.tests.AggregateTestCase)', 'test_nonaggregate_aggregation_throws (aggregation.tests.AggregateTestCase)', 'test_nonfield_annotation (aggregation.tests.AggregateTestCase)', 'test_order_of_precedence (aggregation.tests.AggregateTestCase)', 'test_related_aggregate (aggregation.tests.AggregateTestCase)', 'test_reverse_fkey_annotate (aggregation.tests.AggregateTestCase)', 'test_single_aggregate (aggregation.tests.AggregateTestCase)', 'test_sum_distinct_aggregate (aggregation.tests.AggregateTestCase)', 'test_sum_duration_field (aggregation.tests.AggregateTestCase)', 'test_ticket11881 (aggregation.tests.AggregateTestCase)', 'test_ticket12886 (aggregation.tests.AggregateTestCase)', 'test_ticket17424 (aggregation.tests.AggregateTestCase)', 'test_values_aggregation (aggregation.tests.AggregateTestCase)', 'test_values_annotation_with_expression (aggregation.tests.AggregateTestCase)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-12589: resolved: True
+2026-09-12 22:50:46,659 - INFO - Attempting to stop container sweb.eval.django__django-12589.tonight-v2c...
+2026-09-12 22:51:02,026 - INFO - Container sweb.eval.django__django-12589.tonight-v2c stopped successfully.
+2026-09-12 22:51:02,027 - INFO - Attempting to remove container sweb.eval.django__django-12589.tonight-v2c...
+2026-09-12 22:51:02,206 - INFO - Container sweb.eval.django__django-12589.tonight-v2c removed successfully.

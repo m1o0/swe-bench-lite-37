@@ -1,0 +1,42 @@
+# django__django-11797 — v2 验证记录(2026-09-12)
+
+## 命令与原始输出(WSL 实跑)
+1. git apply runs_v2/django__django-11797/test_patch.txt(临时应用隐藏测试)
+2. wsl.exe bash <EXP_ROOT_POSIX>/run_wsl_tests.sh django__django-11797 lookup.tests
+
+Creating test database for alias 'default'...
+.......................................
+----------------------------------------------------------------------
+Ran 39 tests in 0.094s
+
+OK
+Destroying test database for alias 'default'...
+Testing against Django installed in '/mnt/d/mio/worktrees/django__django-11797/django'
+System check identified no issues (0 silenced).
+
+3. 同族场景(临时文件 tests/lookup/v2_scenarios_check.py,7 场景,验证后删除)
+   wsl.exe bash <EXP_ROOT_POSIX>/run_wsl_tests.sh django__django-11797 lookup.v2_scenarios_check
+
+Creating test database for alias 'default'...
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.008s
+
+OK
+Destroying test database for alias 'default'...
+Testing against Django installed in '/mnt/d/mio/worktrees/django__django-11797/django'
+System check identified no issues (0 silenced).
+
+## 场景覆盖对照(门禁单清单)
+1. 外层 filter 覆盖内查询 values() 的 selected columns → 覆盖
+   (filter(id=values('name').annotate(max_id=Max('id')).values('max_id')[:1])
+    断言取回 pk=3 的 Author;与 v1 行为不一致:v1 日志同场景返回 pk=2,
+    即"修复不完整"的直接对照证据)
+2. 内查询 values() 单列 vs 多列 → 覆盖:单列取回 pk=3;多列 exact 标量比较
+   由数据库拒绝(不再被静默改写成 pk 单列)
+3. exact 以外 lookup(in,含切片)→ 覆盖:in 与 in+切片均返回 pk=3
+4. 内查询 annotate() 后再 values() → 覆盖(与隐藏用例同型)
+5. 内查询 order_by() 且外层再 filter → 覆盖:order_by('max_id') 后取回 pk=3
+6. distinct() 参与 → 覆盖:distinct 后取回 pk=3
+7. 子查询嵌套两层 → 覆盖:filter(id__in=filter(id=max_ids[:1]).values('id'))
+   返回 pk=3

@@ -1,0 +1,113 @@
+diff --git a/django/forms/widgets.py b/django/forms/widgets.py
+index 02aa32b207..e3ca8c0981 100644
+--- a/django/forms/widgets.py
++++ b/django/forms/widgets.py
+@@ -59,22 +59,15 @@ class Media:
+ 
+     @property
+     def _css(self):
+-        css = self._css_lists[0]
+-        # filter(None, ...) avoids calling merge with empty dicts.
+-        for obj in filter(None, self._css_lists[1:]):
+-            css = {
+-                medium: self.merge(css.get(medium, []), obj.get(medium, []))
+-                for medium in css.keys() | obj.keys()
+-            }
+-        return css
++        css = {}
++        for css_list in self._css_lists:
++            for medium, path_list in css_list.items():
++                css.setdefault(medium, []).append(path_list)
++        return {medium: self.merge(*path_lists) for medium, path_lists in css.items()}
+ 
+     @property
+     def _js(self):
+-        js = self._js_lists[0]
+-        # filter(None, ...) avoids calling merge() with empty lists.
+-        for obj in filter(None, self._js_lists[1:]):
+-            js = self.merge(js, obj)
+-        return js
++        return self.merge(*self._js_lists)
+ 
+     def render(self):
+         return mark_safe('\n'.join(chain.from_iterable(getattr(self, 'render_' + name)() for name in MEDIA_TYPES)))
+@@ -115,39 +108,52 @@ class Media:
+         raise KeyError('Unknown media type "%s"' % name)
+ 
+     @staticmethod
+-    def merge(list_1, list_2):
++    def merge(*lists):
+         """
+-        Merge two lists while trying to keep the relative order of the elements.
+-        Warn if the lists have the same two elements in a different relative
+-        order.
++        Merge lists while trying to keep the relative order of the elements.
++        Warn if the lists have the same elements in a different relative order.
++
++        The result is the single shortest list in which all elements preserve
++        their original relative order, and which contains all elements of all
++        the input lists. Conflicting relative orders are resolved with a
++        MediaOrderConflictWarning.
+ 
+         For static assets it can be important to have them included in the DOM
+         in a certain order. In JavaScript you may not be able to reference a
+         global or in CSS you might want to override a style.
+         """
+-        # Start with a copy of list_1.
+-        combined_list = list(list_1)
+-        last_insert_index = len(list_1)
+-        # Walk list_2 in reverse, inserting each element into combined_list if
+-        # it doesn't already exist.
+-        for path in reversed(list_2):
+-            try:
+-                # Does path already exist in the list?
+-                index = combined_list.index(path)
+-            except ValueError:
+-                # Add path to combined_list since it doesn't exist.
+-                combined_list.insert(last_insert_index, path)
+-            else:
+-                if index > last_insert_index:
+-                    warnings.warn(
+-                        'Detected duplicate Media files in an opposite order:\n'
+-                        '%s\n%s' % (combined_list[last_insert_index], combined_list[index]),
+-                        MediaOrderConflictWarning,
+-                    )
+-                # path already exists in the list. Update last_insert_index so
+-                # that the following elements are inserted in front of this one.
+-                last_insert_index = index
+-        return combined_list
++        dependency_graph = {}
++        for lst in lists:
++            for item, next_item in zip(lst, lst[1:]):
++                if item != next_item:
++                    dependency_graph.setdefault(next_item, set()).add(item)
++
++        remaining = list(dict.fromkeys(chain.from_iterable(lists)))
++        sorted_items = []
++        while remaining:
++            remaining_set = set(remaining)
++            # Serve, in declaration order, every item whose dependencies have
++            # already been emitted.
++            ready = [
++                item for item in remaining
++                if not dependency_graph.get(item, set()).intersection(remaining_set)
++            ]
++            if not ready:
++                # A cycle means some lists order the same elements in
++                # opposite ways.
++                warnings.warn(
++                    'Detected duplicate Media files in an opposite order: %s'
++                    % ', '.join(
++                        repr(lst) for lst in lists if set(lst).intersection(remaining_set)
++                    ),
++                    MediaOrderConflictWarning,
++                )
++                sorted_items.extend(remaining)
++                break
++            for item in ready:
++                sorted_items.append(item)
++                remaining.remove(item)
++        return sorted_items
+ 
+     def __add__(self, other):
+         combined = Media()

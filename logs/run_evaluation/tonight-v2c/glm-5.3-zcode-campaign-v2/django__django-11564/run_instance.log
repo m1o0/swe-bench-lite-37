@@ -1,0 +1,113 @@
+2026-09-12 22:50:04,665 - INFO - Creating container for django__django-11564...
+2026-09-12 22:50:04,767 - INFO - Container for django__django-11564 created: 382478d119f10e9f4b77e493995152fbdc20102ad5743aae81e9ef5ef54a1d99
+2026-09-12 22:50:04,965 - INFO - Container for django__django-11564 started: 382478d119f10e9f4b77e493995152fbdc20102ad5743aae81e9ef5ef54a1d99
+2026-09-12 22:50:04,969 - INFO - Intermediate patch for django__django-11564 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/django__django-11564/patch.diff, now applying to container...
+2026-09-12 22:50:05,080 - INFO - >>>>> Applied Patch:
+Checking patch django/conf/__init__.py...
+warning: django/conf/__init__.py has type 100755, expected 100644
+Applied patch django/conf/__init__.py cleanly.
+
+2026-09-12 22:50:07,249 - INFO - Git diff before:
+diff --git a/django/conf/__init__.py b/django/conf/__init__.py
+index b32e56184d..ad4b31fda0 100755
+--- a/django/conf/__init__.py
++++ b/django/conf/__init__.py
+@@ -12,6 +12,7 @@ import time
+ import traceback
+ import warnings
+ from pathlib import Path
++from urllib.parse import urlsplit
+ 
+ import django
+ from django.conf import global_settings
+@@ -21,6 +22,23 @@ from django.utils.functional import LazyObject, empty
+ 
+ ENVIRONMENT_VARIABLE = "DJANGO_SETTINGS_MODULE"
+ 
++
++def _add_script_name(val):
++    # Don't add the SCRIPT_NAME prefix to absolute paths or to URLs with a
++    # known scheme; prefix relative paths, invalid URLs and blank values.
++    if val.startswith('/') or urlsplit(val).scheme in ('http', 'https', 'ftp', 'ftps'):
++        return val
++    from django.urls import get_script_prefix
++    script_name = get_script_prefix()
++    if not script_name:
++        return val
++    if script_name != '/':
++        script_name = script_name.rstrip('/') + '/'
++    if not val:
++        # A blank value is only prefixed when a non-default script name is set.
++        return script_name if script_name != '/' else val
++    return script_name + val
++
+ PASSWORD_RESET_TIMEOUT_DAYS_DEPRECATED_MSG = (
+     'The PASSWORD_RESET_TIMEOUT_DAYS setting is deprecated. Use '
+     'PASSWORD_RESET_TIMEOUT instead.'
+@@ -75,6 +93,10 @@ class LazySettings(LazyObject):
+         if self._wrapped is empty:
+             self._setup(name)
+         val = getattr(self._wrapped, name)
++        if name in ('MEDIA_URL', 'STATIC_URL'):
++            # The SCRIPT_NAME prefix is dynamic (per request/thread), so these
++            # settings are never cached in self.__dict__.
++            return _add_script_name(val) if isinstance(val, str) else val
+         self.__dict__[name] = val
+         return val
+2026-09-12 22:50:07,255 - INFO - Eval script for django__django-11564 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/django__django-11564/eval.sh; copying to container...
+2026-09-12 22:50:21,860 - INFO - Test runtime: 14.54 seconds
+2026-09-12 22:50:21,871 - INFO - Test output for django__django-11564 written to logs/run_evaluation/tonight-v2c/glm-5.3-zcode-campaign-v2/django__django-11564/test_output.txt
+2026-09-12 22:50:21,911 - INFO - Git diff after:
+diff --git a/django/conf/__init__.py b/django/conf/__init__.py
+index b32e56184d..ad4b31fda0 100755
+--- a/django/conf/__init__.py
++++ b/django/conf/__init__.py
+@@ -12,6 +12,7 @@ import time
+ import traceback
+ import warnings
+ from pathlib import Path
++from urllib.parse import urlsplit
+ 
+ import django
+ from django.conf import global_settings
+@@ -21,6 +22,23 @@ from django.utils.functional import LazyObject, empty
+ 
+ ENVIRONMENT_VARIABLE = "DJANGO_SETTINGS_MODULE"
+ 
++
++def _add_script_name(val):
++    # Don't add the SCRIPT_NAME prefix to absolute paths or to URLs with a
++    # known scheme; prefix relative paths, invalid URLs and blank values.
++    if val.startswith('/') or urlsplit(val).scheme in ('http', 'https', 'ftp', 'ftps'):
++        return val
++    from django.urls import get_script_prefix
++    script_name = get_script_prefix()
++    if not script_name:
++        return val
++    if script_name != '/':
++        script_name = script_name.rstrip('/') + '/'
++    if not val:
++        # A blank value is only prefixed when a non-default script name is set.
++        return script_name if script_name != '/' else val
++    return script_name + val
++
+ PASSWORD_RESET_TIMEOUT_DAYS_DEPRECATED_MSG = (
+     'The PASSWORD_RESET_TIMEOUT_DAYS setting is deprecated. Use '
+     'PASSWORD_RESET_TIMEOUT instead.'
+@@ -75,6 +93,10 @@ class LazySettings(LazyObject):
+         if self._wrapped is empty:
+             self._setup(name)
+         val = getattr(self._wrapped, name)
++        if name in ('MEDIA_URL', 'STATIC_URL'):
++            # The SCRIPT_NAME prefix is dynamic (per request/thread), so these
++            # settings are never cached in self.__dict__.
++            return _add_script_name(val) if isinstance(val, str) else val
+         self.__dict__[name] = val
+         return val
+2026-09-12 22:50:21,912 - INFO - Grading answer for django__django-11564...
+2026-09-12 22:50:21,926 - INFO - report: {'django__django-11564': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_add_script_name_prefix (settings_tests.tests.MediaURLStaticURLPrefixTest)', 'test_not_prefixed (settings_tests.tests.MediaURLStaticURLPrefixTest)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_max_recursion_error (settings_tests.tests.ClassDecoratedTestCaseSuper)', 'test_override_settings_inheritance (settings_tests.tests.ChildDecoratedTestCase)', 'test_method_override (settings_tests.tests.FullyDecoratedTestCase)', 'test_override (settings_tests.tests.FullyDecoratedTestCase)', 'test_max_recursion_error (settings_tests.tests.ClassDecoratedTestCase)', 'test_method_override (settings_tests.tests.ClassDecoratedTestCase)', 'test_override (settings_tests.tests.ClassDecoratedTestCase)', 'Settings are overridden within setUpClass (#21281).', 'Regression test for #9610.', 'test_first_character_dot (file_storage.tests.FileStoragePathParsing)', 'test_get_filesystem_storage (file_storage.tests.GetStorageClassTests)', 'test_get_invalid_storage_module (file_storage.tests.GetStorageClassTests)', 'test_get_nonexistent_storage_class (file_storage.tests.GetStorageClassTests)', 'test_get_nonexistent_storage_module (file_storage.tests.GetStorageClassTests)', 'Receiver fails on both enter and exit.', 'Receiver fails on enter only.', 'Receiver fails on exit only.', 'test_override_settings_reusable_on_enter (settings_tests.tests.OverrideSettingsIsolationOnExceptionTests)', 'test_configure (settings_tests.tests.IsOverriddenTest)', 'test_evaluated_lazysettings_repr (settings_tests.tests.IsOverriddenTest)', 'test_module (settings_tests.tests.IsOverriddenTest)', 'test_override (settings_tests.tests.IsOverriddenTest)', 'test_settings_repr (settings_tests.tests.IsOverriddenTest)', 'test_unevaluated_lazysettings_repr (settings_tests.tests.IsOverriddenTest)', 'test_usersettingsholder_repr (settings_tests.tests.IsOverriddenTest)', 'test_content_saving (file_storage.tests.ContentFileStorageTestCase)', 'test_none (settings_tests.tests.SecureProxySslHeaderTest)', 'test_set_with_xheader_right (settings_tests.tests.SecureProxySslHeaderTest)', 'test_set_with_xheader_wrong (settings_tests.tests.SecureProxySslHeaderTest)', 'test_set_without_xheader (settings_tests.tests.SecureProxySslHeaderTest)', 'test_xheader_preferred_to_underlying_request (settings_tests.tests.SecureProxySslHeaderTest)', 'Regression test for #19031', 'test_already_configured (settings_tests.tests.SettingsTests)', 'test_class_decorator (settings_tests.tests.SettingsTests)', 'test_context_manager (settings_tests.tests.SettingsTests)', 'test_decorator (settings_tests.tests.SettingsTests)', 'test_incorrect_timezone (settings_tests.tests.SettingsTests)', 'test_no_secret_key (settings_tests.tests.SettingsTests)', 'test_no_settings_module (settings_tests.tests.SettingsTests)', 'test_nonupper_settings_ignored_in_default_settings (settings_tests.tests.SettingsTests)', 'test_nonupper_settings_prohibited_in_configure (settings_tests.tests.SettingsTests)', 'test_override (settings_tests.tests.SettingsTests)', 'test_override_change (settings_tests.tests.SettingsTests)', 'test_override_doesnt_leak (settings_tests.tests.SettingsTests)', 'test_override_settings_delete (settings_tests.tests.SettingsTests)', 'test_override_settings_nested (settings_tests.tests.SettingsTests)', 'test_settings_delete (settings_tests.tests.SettingsTests)', 'test_settings_delete_wrapped (settings_tests.tests.SettingsTests)', 'test_signal_callback_context_manager (settings_tests.tests.SettingsTests)', 'test_signal_callback_decorator (settings_tests.tests.SettingsTests)', 'test_tuple_settings (settings_tests.tests.TestListSettings)', 'test_deconstruction (file_storage.tests.FileSystemStorageTests)', 'test_lazy_base_url_init (file_storage.tests.FileSystemStorageTests)', 'test_file_upload_default_permissions (file_storage.tests.FileStoragePermissions)', 'test_file_upload_directory_default_permissions (file_storage.tests.FileStoragePermissions)', 'test_file_upload_directory_permissions (file_storage.tests.FileStoragePermissions)', 'test_file_upload_permissions (file_storage.tests.FileStoragePermissions)', 'test_decorated_testcase_module (settings_tests.tests.FullyDecoratedTranTestCase)', 'test_decorated_testcase_name (settings_tests.tests.FullyDecoratedTranTestCase)', 'test_method_list_override (settings_tests.tests.FullyDecoratedTranTestCase)', 'test_method_list_override_nested_order (settings_tests.tests.FullyDecoratedTranTestCase)', 'test_method_list_override_no_ops (settings_tests.tests.FullyDecoratedTranTestCase)', 'test_method_list_override_strings (settings_tests.tests.FullyDecoratedTranTestCase)', 'test_method_override (settings_tests.tests.FullyDecoratedTranTestCase)', 'test_override (settings_tests.tests.FullyDecoratedTranTestCase)', 'test_custom_valid_name_callable_upload_to (file_storage.tests.FileFieldStorageTests)', 'test_duplicate_filename (file_storage.tests.FileFieldStorageTests)', 'test_empty_upload_to (file_storage.tests.FileFieldStorageTests)', 'test_extended_length_storage (file_storage.tests.FileFieldStorageTests)', 'test_file_object (file_storage.tests.FileFieldStorageTests)', 'test_file_truncation (file_storage.tests.FileFieldStorageTests)', 'test_filefield_default (file_storage.tests.FileFieldStorageTests)', 'test_filefield_pickling (file_storage.tests.FileFieldStorageTests)', 'test_filefield_read (file_storage.tests.FileFieldStorageTests)', 'test_filefield_reopen (file_storage.tests.FileFieldStorageTests)', 'test_filefield_write (file_storage.tests.FileFieldStorageTests)', 'test_files (file_storage.tests.FileFieldStorageTests)', 'test_pathlib_upload_to (file_storage.tests.FileFieldStorageTests)', 'test_random_upload_to (file_storage.tests.FileFieldStorageTests)', 'test_stringio (file_storage.tests.FileFieldStorageTests)', 'test_base_url (file_storage.tests.OverwritingStorageTests)', 'test_delete_deletes_directories (file_storage.tests.OverwritingStorageTests)', 'test_delete_no_name (file_storage.tests.OverwritingStorageTests)', 'test_empty_location (file_storage.tests.OverwritingStorageTests)', 'test_file_access_options (file_storage.tests.OverwritingStorageTests)', 'test_file_chunks_error (file_storage.tests.OverwritingStorageTests)', 'test_file_get_accessed_time (file_storage.tests.OverwritingStorageTests)', 'test_file_get_accessed_time_timezone (file_storage.tests.OverwritingStorageTests)', 'test_file_get_created_time (file_storage.tests.OverwritingStorageTests)', 'test_file_get_created_time_timezone (file_storage.tests.OverwritingStorageTests)', 'test_file_get_modified_time (file_storage.tests.OverwritingStorageTests)', 'test_file_get_modified_time_timezone (file_storage.tests.OverwritingStorageTests)', 'test_file_path (file_storage.tests.OverwritingStorageTests)', 'test_file_save_with_path (file_storage.tests.OverwritingStorageTests)', 'test_file_save_without_name (file_storage.tests.OverwritingStorageTests)', 'The storage backend should preserve case of filenames.', 'test_file_storage_prevents_directory_traversal (file_storage.tests.OverwritingStorageTests)', 'test_file_url (file_storage.tests.OverwritingStorageTests)', 'test_listdir (file_storage.tests.OverwritingStorageTests)', 'test_makedirs_race_handling (file_storage.tests.OverwritingStorageTests)', 'test_remove_race_handling (file_storage.tests.OverwritingStorageTests)', 'test_save_doesnt_close (file_storage.tests.OverwritingStorageTests)', 'Saving to same file name twice overwrites the first file.', 'test_setting_changed (file_storage.tests.OverwritingStorageTests)', 'test_base_url (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_custom_storage_discarding_empty_content (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_delete_deletes_directories (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_delete_no_name (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_empty_location (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_access_options (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_chunks_error (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_get_accessed_time (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_get_accessed_time_timezone (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_get_created_time (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_get_created_time_timezone (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_get_modified_time (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_get_modified_time_timezone (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_path (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_save_with_path (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_save_without_name (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_storage_prevents_directory_traversal (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_file_url (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_listdir (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_makedirs_race_handling (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_remove_race_handling (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_save_doesnt_close (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_setting_changed (file_storage.tests.DiscardingFalseContentStorageTests)', 'test_base_url (file_storage.tests.CustomStorageTests)', 'test_custom_get_available_name (file_storage.tests.CustomStorageTests)', 'test_delete_deletes_directories (file_storage.tests.CustomStorageTests)', 'test_delete_no_name (file_storage.tests.CustomStorageTests)', 'test_empty_location (file_storage.tests.CustomStorageTests)', 'test_file_access_options (file_storage.tests.CustomStorageTests)', 'test_file_chunks_error (file_storage.tests.CustomStorageTests)', 'test_file_get_accessed_time (file_storage.tests.CustomStorageTests)', 'test_file_get_accessed_time_timezone (file_storage.tests.CustomStorageTests)', 'test_file_get_created_time (file_storage.tests.CustomStorageTests)', 'test_file_get_created_time_timezone (file_storage.tests.CustomStorageTests)', 'test_file_get_modified_time (file_storage.tests.CustomStorageTests)', 'test_file_get_modified_time_timezone (file_storage.tests.CustomStorageTests)', 'test_file_path (file_storage.tests.CustomStorageTests)', 'test_file_save_with_path (file_storage.tests.CustomStorageTests)', 'test_file_save_without_name (file_storage.tests.CustomStorageTests)', 'test_file_storage_prevents_directory_traversal (file_storage.tests.CustomStorageTests)', 'test_file_url (file_storage.tests.CustomStorageTests)', 'test_listdir (file_storage.tests.CustomStorageTests)', 'test_makedirs_race_handling (file_storage.tests.CustomStorageTests)', 'test_remove_race_handling (file_storage.tests.CustomStorageTests)', 'test_save_doesnt_close (file_storage.tests.CustomStorageTests)', 'test_setting_changed (file_storage.tests.CustomStorageTests)', 'test_base_url (file_storage.tests.FileStorageTests)', 'test_delete_deletes_directories (file_storage.tests.FileStorageTests)', 'test_delete_no_name (file_storage.tests.FileStorageTests)', 'test_empty_location (file_storage.tests.FileStorageTests)', 'test_file_access_options (file_storage.tests.FileStorageTests)', 'test_file_chunks_error (file_storage.tests.FileStorageTests)', 'test_file_get_accessed_time (file_storage.tests.FileStorageTests)', 'test_file_get_accessed_time_timezone (file_storage.tests.FileStorageTests)', 'test_file_get_created_time (file_storage.tests.FileStorageTests)', 'test_file_get_created_time_timezone (file_storage.tests.FileStorageTests)', 'test_file_get_modified_time (file_storage.tests.FileStorageTests)', 'test_file_get_modified_time_timezone (file_storage.tests.FileStorageTests)', 'test_file_path (file_storage.tests.FileStorageTests)', 'test_file_save_with_path (file_storage.tests.FileStorageTests)', 'test_file_save_without_name (file_storage.tests.FileStorageTests)', 'test_file_storage_prevents_directory_traversal (file_storage.tests.FileStorageTests)', 'test_file_url (file_storage.tests.FileStorageTests)', 'test_listdir (file_storage.tests.FileStorageTests)', 'test_makedirs_race_handling (file_storage.tests.FileStorageTests)', 'test_remove_race_handling (file_storage.tests.FileStorageTests)', 'test_save_doesnt_close (file_storage.tests.FileStorageTests)', 'test_setting_changed (file_storage.tests.FileStorageTests)', 'test_urllib_request_urlopen (file_storage.tests.FileLikeObjectTestCase)', 'test_race_condition (file_storage.tests.FileSaveRaceConditionTest)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-11564: resolved: True
+2026-09-12 22:50:21,930 - INFO - Attempting to stop container sweb.eval.django__django-11564.tonight-v2c...
+2026-09-12 22:50:37,298 - INFO - Container sweb.eval.django__django-11564.tonight-v2c stopped successfully.
+2026-09-12 22:50:37,299 - INFO - Attempting to remove container sweb.eval.django__django-11564.tonight-v2c...
+2026-09-12 22:50:37,467 - INFO - Container sweb.eval.django__django-11564.tonight-v2c removed successfully.

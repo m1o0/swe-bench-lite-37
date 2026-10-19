@@ -1,0 +1,37 @@
+diff --git a/django/contrib/admin/utils.py b/django/contrib/admin/utils.py
+index e4ddc8f017..82f7f62d74 100644
+--- a/django/contrib/admin/utils.py
++++ b/django/contrib/admin/utils.py
+@@ -398,6 +398,15 @@ def display_for_field(value, field, empty_value_display):
+         return formats.number_format(value)
+     elif isinstance(field, models.FileField) and value:
+         return format_html('<a href="{}">{}</a>', value.url, value)
++    elif isinstance(field, models.JSONField):
++        # Render valid JSON (via prepare_value) instead of the Python repr.
++        # Values that json cannot serialize (e.g. dicts with non-string keys)
++        # fall back to the plain representation — invalid JSON, but a faithful
++        # display that doesn't crash the admin.
++        try:
++            return field.prepare_value(value)
++        except TypeError:
++            return display_for_value(value, empty_value_display)
+     else:
+         return display_for_value(value, empty_value_display)
+ 
+diff --git a/django/db/models/fields/json.py b/django/db/models/fields/json.py
+index edc5441799..2508776792 100644
+--- a/django/db/models/fields/json.py
++++ b/django/db/models/fields/json.py
+@@ -85,6 +85,12 @@ class JSONField(CheckFieldDefaultMixin, Field):
+             return value
+         return json.dumps(value, cls=self.encoder)
+ 
++    def prepare_value(self, value):
++        # Display valid JSON (e.g. in the admin) instead of the Python repr.
++        # Values that cannot be serialized (e.g. non-string dict keys) raise
++        # TypeError; the caller decides on a plain-representation fallback.
++        return json.dumps(value, cls=self.encoder)
++
+     def get_transform(self, name):
+         transform = super().get_transform(name)
+         if transform:

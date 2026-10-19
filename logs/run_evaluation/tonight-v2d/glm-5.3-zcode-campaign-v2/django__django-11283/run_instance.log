@@ -1,0 +1,113 @@
+2026-09-12 23:04:22,521 - INFO - Creating container for django__django-11283...
+2026-09-12 23:04:22,619 - INFO - Container for django__django-11283 created: c9c6df6c27ba469166124ed4ebe8f4091e44bd9097a81a50113cad70b6910f93
+2026-09-12 23:04:22,799 - INFO - Container for django__django-11283 started: c9c6df6c27ba469166124ed4ebe8f4091e44bd9097a81a50113cad70b6910f93
+2026-09-12 23:04:22,804 - INFO - Intermediate patch for django__django-11283 written to logs/run_evaluation/tonight-v2d/glm-5.3-zcode-campaign-v2/django__django-11283/patch.diff, now applying to container...
+2026-09-12 23:04:22,934 - INFO - >>>>> Applied Patch:
+Checking patch django/contrib/auth/migrations/0011_update_proxy_permissions.py...
+warning: django/contrib/auth/migrations/0011_update_proxy_permissions.py has type 100755, expected 100644
+Applied patch django/contrib/auth/migrations/0011_update_proxy_permissions.py cleanly.
+
+2026-09-12 23:04:25,120 - INFO - Git diff before:
+diff --git a/django/contrib/auth/migrations/0011_update_proxy_permissions.py b/django/contrib/auth/migrations/0011_update_proxy_permissions.py
+index 0e66649695..68f53c25f1 100755
+--- a/django/contrib/auth/migrations/0011_update_proxy_permissions.py
++++ b/django/contrib/auth/migrations/0011_update_proxy_permissions.py
+@@ -1,4 +1,4 @@
+-from django.db import migrations
++from django.db import IntegrityError, migrations, transaction
+ from django.db.models import Q
+ 
+ 
+@@ -24,10 +24,31 @@ def update_proxy_model_permissions(apps, schema_editor, reverse=False):
+         proxy_content_type = ContentType.objects.get_for_model(Model, for_concrete_model=False)
+         old_content_type = proxy_content_type if reverse else concrete_content_type
+         new_content_type = concrete_content_type if reverse else proxy_content_type
+-        Permission.objects.filter(
+-            permissions_query,
+-            content_type=old_content_type,
+-        ).update(content_type=new_content_type)
++        try:
++            with transaction.atomic():
++                Permission.objects.filter(
++                    permissions_query,
++                    content_type=old_content_type,
++                ).update(content_type=new_content_type)
++        except IntegrityError:
++            # A permission with a codename to move already exists for the new
++            # content type, e.g. when a model was deleted and recreated as a
++            # proxy model, leaving the permissions of the original model
++            # behind. Because (content_type, codename) is unique, permissions
++            # that would collide are duplicates of the existing ones and
++            # cannot be moved; remove them, then move the remaining ones.
++            print('A problem arose migrating proxy model permissions')
++            Permission.objects.filter(
++                permissions_query,
++                content_type=old_content_type,
++                codename__in=Permission.objects.filter(
++                    content_type=new_content_type,
++                ).values('codename'),
++            ).delete()
++            Permission.objects.filter(
++                permissions_query,
++                content_type=old_content_type,
++            ).update(content_type=new_content_type)
+ 
+ 
+ def revert_proxy_model_permissions(apps, schema_editor):
+2026-09-12 23:04:25,124 - INFO - Eval script for django__django-11283 written to logs/run_evaluation/tonight-v2d/glm-5.3-zcode-campaign-v2/django__django-11283/eval.sh; copying to container...
+2026-09-12 23:04:33,591 - INFO - Test runtime: 8.41 seconds
+2026-09-12 23:04:33,605 - INFO - Test output for django__django-11283 written to logs/run_evaluation/tonight-v2d/glm-5.3-zcode-campaign-v2/django__django-11283/test_output.txt
+2026-09-12 23:04:33,658 - INFO - Git diff after:
+diff --git a/django/contrib/auth/migrations/0011_update_proxy_permissions.py b/django/contrib/auth/migrations/0011_update_proxy_permissions.py
+index 0e66649695..68f53c25f1 100755
+--- a/django/contrib/auth/migrations/0011_update_proxy_permissions.py
++++ b/django/contrib/auth/migrations/0011_update_proxy_permissions.py
+@@ -1,4 +1,4 @@
+-from django.db import migrations
++from django.db import IntegrityError, migrations, transaction
+ from django.db.models import Q
+ 
+ 
+@@ -24,10 +24,31 @@ def update_proxy_model_permissions(apps, schema_editor, reverse=False):
+         proxy_content_type = ContentType.objects.get_for_model(Model, for_concrete_model=False)
+         old_content_type = proxy_content_type if reverse else concrete_content_type
+         new_content_type = concrete_content_type if reverse else proxy_content_type
+-        Permission.objects.filter(
+-            permissions_query,
+-            content_type=old_content_type,
+-        ).update(content_type=new_content_type)
++        try:
++            with transaction.atomic():
++                Permission.objects.filter(
++                    permissions_query,
++                    content_type=old_content_type,
++                ).update(content_type=new_content_type)
++        except IntegrityError:
++            # A permission with a codename to move already exists for the new
++            # content type, e.g. when a model was deleted and recreated as a
++            # proxy model, leaving the permissions of the original model
++            # behind. Because (content_type, codename) is unique, permissions
++            # that would collide are duplicates of the existing ones and
++            # cannot be moved; remove them, then move the remaining ones.
++            print('A problem arose migrating proxy model permissions')
++            Permission.objects.filter(
++                permissions_query,
++                content_type=old_content_type,
++                codename__in=Permission.objects.filter(
++                    content_type=new_content_type,
++                ).values('codename'),
++            ).delete()
++            Permission.objects.filter(
++                permissions_query,
++                content_type=old_content_type,
++            ).update(content_type=new_content_type)
+ 
+ 
+ def revert_proxy_model_permissions(apps, schema_editor):
+2026-09-12 23:04:33,659 - INFO - Grading answer for django__django-11283...
+2026-09-12 23:04:33,675 - INFO - report: {'django__django-11283': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_migrate_with_existing_target_permission (auth_tests.test_migrations.ProxyModelWithSameAppLabelTests)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_migrate_backwards (auth_tests.test_migrations.ProxyModelWithDifferentAppLabelTests)', 'test_proxy_model_permissions_contenttype (auth_tests.test_migrations.ProxyModelWithDifferentAppLabelTests)', 'test_user_has_now_proxy_model_permissions (auth_tests.test_migrations.ProxyModelWithDifferentAppLabelTests)', 'test_user_keeps_same_permissions_after_migrating_backward (auth_tests.test_migrations.ProxyModelWithDifferentAppLabelTests)', 'test_migrate_backwards (auth_tests.test_migrations.ProxyModelWithSameAppLabelTests)', 'test_proxy_model_permissions_contenttype (auth_tests.test_migrations.ProxyModelWithSameAppLabelTests)', 'test_user_keeps_same_permissions_after_migrating_backward (auth_tests.test_migrations.ProxyModelWithSameAppLabelTests)', 'test_user_still_has_proxy_model_permissions (auth_tests.test_migrations.ProxyModelWithSameAppLabelTests)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-11283: resolved: True
+2026-09-12 23:04:33,679 - INFO - Attempting to stop container sweb.eval.django__django-11283.tonight-v2d...
+2026-09-12 23:04:47,776 - INFO - Container sweb.eval.django__django-11283.tonight-v2d stopped successfully.
+2026-09-12 23:04:47,776 - INFO - Attempting to remove container sweb.eval.django__django-11283.tonight-v2d...
+2026-09-12 23:04:47,928 - INFO - Container sweb.eval.django__django-11283.tonight-v2d removed successfully.
