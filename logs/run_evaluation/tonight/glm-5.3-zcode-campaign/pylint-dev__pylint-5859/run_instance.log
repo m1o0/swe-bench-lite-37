@@ -1,0 +1,64 @@
+2026-09-10 18:49:38,765 - INFO - Image not found locally, attempting to pull...
+2026-09-10 18:57:57,799 - INFO - Creating container for pylint-dev__pylint-5859...
+2026-09-10 18:57:58,084 - INFO - Container for pylint-dev__pylint-5859 created: d447f4c65f5702c83d5a38abb1afb14983658c6261e065f9a8448e488710b32a
+2026-09-10 18:57:58,369 - INFO - Container for pylint-dev__pylint-5859 started: d447f4c65f5702c83d5a38abb1afb14983658c6261e065f9a8448e488710b32a
+2026-09-10 18:57:58,378 - INFO - Intermediate patch for pylint-dev__pylint-5859 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/pylint-dev__pylint-5859/patch.diff, now applying to container...
+2026-09-10 18:57:58,512 - INFO - >>>>> Applied Patch:
+Checking patch pylint/checkers/misc.py...
+warning: pylint/checkers/misc.py has type 100755, expected 100644
+Applied patch pylint/checkers/misc.py cleanly.
+
+2026-09-10 18:57:58,737 - INFO - Git diff before:
+diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py
+index 69149e61..30df33fb 100755
+--- a/pylint/checkers/misc.py
++++ b/pylint/checkers/misc.py
+@@ -120,10 +120,15 @@ class EncodingChecker(BaseChecker):
+         super().open()
+ 
+         notes = "|".join(re.escape(note) for note in self.config.notes)
++        # A trailing '\b' word boundary can never match after a tag that
++        # consists entirely of punctuation, e.g. '???', because a boundary
++        # requires a transition between word and non-word characters.
++        # Use a negative lookahead instead so a tag is ignored only when
++        # it is immediately followed by another word character.
+         if self.config.notes_rgx:
+-            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})\b"
++            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})(?!\w)"
+         else:
+-            regex_string = rf"#\s*({notes})\b"
++            regex_string = rf"#\s*({notes})(?!\w)"
+ 
+         self._fixme_pattern = re.compile(regex_string, re.I)
+2026-09-10 18:57:58,743 - INFO - Eval script for pylint-dev__pylint-5859 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/pylint-dev__pylint-5859/eval.sh; copying to container...
+2026-09-10 18:58:06,930 - INFO - Test runtime: 8.13 seconds
+2026-09-10 18:58:06,941 - INFO - Test output for pylint-dev__pylint-5859 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/pylint-dev__pylint-5859/test_output.txt
+2026-09-10 18:58:06,982 - INFO - Git diff after:
+diff --git a/pylint/checkers/misc.py b/pylint/checkers/misc.py
+index 69149e61..30df33fb 100755
+--- a/pylint/checkers/misc.py
++++ b/pylint/checkers/misc.py
+@@ -120,10 +120,15 @@ class EncodingChecker(BaseChecker):
+         super().open()
+ 
+         notes = "|".join(re.escape(note) for note in self.config.notes)
++        # A trailing '\b' word boundary can never match after a tag that
++        # consists entirely of punctuation, e.g. '???', because a boundary
++        # requires a transition between word and non-word characters.
++        # Use a negative lookahead instead so a tag is ignored only when
++        # it is immediately followed by another word character.
+         if self.config.notes_rgx:
+-            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})\b"
++            regex_string = rf"#\s*({notes}|{self.config.notes_rgx})(?!\w)"
+         else:
+-            regex_string = rf"#\s*({notes})\b"
++            regex_string = rf"#\s*({notes})(?!\w)"
+ 
+         self._fixme_pattern = re.compile(regex_string, re.I)
+2026-09-10 18:58:06,983 - INFO - Grading answer for pylint-dev__pylint-5859...
+2026-09-10 18:58:06,999 - INFO - report: {'pylint-dev__pylint-5859': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['tests/checkers/unittest_misc.py::TestFixme::test_non_alphanumeric_codetag'], 'failure': []}, 'PASS_TO_PASS': {'success': ['tests/checkers/unittest_misc.py::TestFixme::test_fixme_with_message', 'tests/checkers/unittest_misc.py::TestFixme::test_todo_without_message', 'tests/checkers/unittest_misc.py::TestFixme::test_xxx_without_space', 'tests/checkers/unittest_misc.py::TestFixme::test_xxx_middle', 'tests/checkers/unittest_misc.py::TestFixme::test_without_space_fixme', 'tests/checkers/unittest_misc.py::TestFixme::test_absent_codetag', 'tests/checkers/unittest_misc.py::TestFixme::test_other_present_codetag', 'tests/checkers/unittest_misc.py::TestFixme::test_issue_2321_should_not_trigger', 'tests/checkers/unittest_misc.py::TestFixme::test_issue_2321_should_trigger', 'tests/checkers/unittest_misc.py::TestFixme::test_dont_trigger_on_todoist'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for pylint-dev__pylint-5859: resolved: True
+2026-09-10 18:58:07,004 - INFO - Attempting to stop container sweb.eval.pylint-dev__pylint-5859.tonight...
+2026-09-10 18:58:24,326 - INFO - Container sweb.eval.pylint-dev__pylint-5859.tonight stopped successfully.
+2026-09-10 18:58:24,327 - INFO - Attempting to remove container sweb.eval.pylint-dev__pylint-5859.tonight...
+2026-09-10 18:58:24,459 - INFO - Container sweb.eval.pylint-dev__pylint-5859.tonight removed successfully.

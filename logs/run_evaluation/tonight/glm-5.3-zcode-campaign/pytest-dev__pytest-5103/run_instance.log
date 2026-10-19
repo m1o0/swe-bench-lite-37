@@ -1,0 +1,400 @@
+2026-09-10 18:50:46,420 - INFO - Creating container for pytest-dev__pytest-5103...
+2026-09-10 18:50:46,479 - INFO - Container for pytest-dev__pytest-5103 created: 2fbc8e648115d978a22ec9532cabad44ad438225aeb67d26040dbeae0e7ad514
+2026-09-10 18:50:46,610 - INFO - Container for pytest-dev__pytest-5103 started: 2fbc8e648115d978a22ec9532cabad44ad438225aeb67d26040dbeae0e7ad514
+2026-09-10 18:50:46,613 - INFO - Intermediate patch for pytest-dev__pytest-5103 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/pytest-dev__pytest-5103/patch.diff, now applying to container...
+2026-09-10 18:50:46,717 - INFO - >>>>> Applied Patch:
+Checking patch src/_pytest/assertion/rewrite.py...
+warning: src/_pytest/assertion/rewrite.py has type 100755, expected 100644
+Checking patch testing/test_assertrewrite.py...
+warning: testing/test_assertrewrite.py has type 100755, expected 100644
+Applied patch src/_pytest/assertion/rewrite.py cleanly.
+Applied patch testing/test_assertrewrite.py cleanly.
+
+2026-09-10 18:50:46,905 - INFO - Git diff before:
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index 2903b899..5295beec 100755
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -968,6 +968,9 @@ warn_explicit(
+         """
+         visit `ast.Call` nodes on Python3.5 and after
+         """
++        unrolled = self._unroll_all_any(call)
++        if unrolled is not None:
++            return unrolled
+         new_func, func_expl = self.visit(call.func)
+         arg_expls = []
+         new_args = []
+@@ -1001,6 +1004,9 @@ warn_explicit(
+         """
+         visit `ast.Call nodes on 3.4 and below`
+         """
++        unrolled = self._unroll_all_any(call)
++        if unrolled is not None:
++            return unrolled
+         new_func, func_expl = self.visit(call.func)
+         arg_expls = []
+         new_args = []
+@@ -1035,6 +1041,128 @@ warn_explicit(
+     else:
+         visit_Call = visit_Call_legacy
+ 
++    @staticmethod
++    def _comprehension_target_loads(target):
++        """Get Load expressions for the names bound by a comprehension target.
++
++        Returns a list with one expression per bound name (flattening tuple
++        and list targets), or None if the target binds anything we do not
++        know how to capture (e.g. a ``Starred`` entry).
++        """
++        if isinstance(target, ast.Name):
++            return [ast.Name(target.id, ast.Load())]
++        if isinstance(target, (ast.Tuple, ast.List)):
++            loads = []
++            for elt in target.elts:
++                elt_loads = AssertionRewriter._comprehension_target_loads(elt)
++                if elt_loads is None:
++                    return None
++                loads.extend(elt_loads)
++            return loads
++        return None
++
++    def _unroll_all_any(self, call):
++        """Rewrite ``all(<comprehension>)`` / ``any(<comprehension>)`` calls
++        so that the iterable is unrolled, giving useful failure messages.
++
++        ``assert all(pred(x) for x in xs)`` is rewritten to first evaluate an
++        equivalent list comprehension of ``(element value, x)`` pairs, e.g.::
++
++            @py_assert0 = [(pred(x), x) for x in xs]
++            @py_assert1 = all([value for value, item in @py_assert0])
++
++        On failure the explanation then shows the per-item values (as the
++        plain ``all(...)`` call would for a list comprehension) plus the
++        items for which the element value was falsy (for ``all``) or the full
++        item list (for ``any``), instead of an opaque generator repr.
++
++        Returns (result, explanation) if the call was handled, or None if
++        *call* is not an ``all``/``any`` call we know how to unroll, in which
++        case the caller should use the generic call handling.
++        """
++        if (
++            not isinstance(call.func, ast.Name)
++            or call.func.id not in ("all", "any")
++            or len(call.args) != 1
++            or call.keywords
++            or getattr(call, "starargs", None)
++            or getattr(call, "kwargs", None)
++            or not isinstance(
++                call.args[0], (ast.GeneratorExp, ast.ListComp, ast.SetComp)
++            )
++        ):
++            return None
++        comp = call.args[0]
++        loads = []
++        for gen in comp.generators:
++            gen_loads = self._comprehension_target_loads(gen.target)
++            if gen_loads is None:
++                return None
++            loads.extend(gen_loads)
++        if len(loads) == 1:
++            capture = loads[0]
++        else:
++            capture = ast.Tuple(loads, ast.Load())
++        is_all = call.func.id == "all"
++        # Evaluate the comprehension once, as a list of (element value,
++        # item(s)) pairs, so per-item information is available for the failure
++        # message. Generator/set comprehensions are turned into equivalent
++        # list comprehensions; this materializes the whole iterable (same as
++        # ``all``/``any`` do when they don't short-circuit).
++        pairs = ast.ListComp(
++            ast.Tuple([comp.elt, capture], ast.Load()), comp.generators
++        )
++        pairs_res = self.assign(pairs)
++        res_var = self.variable()
++        item_var = self.variable()
++
++        def make_listcomp(elt, ifs):
++            target = ast.Tuple(
++                [ast.Name(res_var, ast.Store()), ast.Name(item_var, ast.Store())],
++                ast.Store(),
++            )
++            try:
++                clause = ast.comprehension(
++                    target,
++                    ast.Name(pairs_res.id, ast.Load()),
++                    list(ifs),
++                    0,
++                )
++            except TypeError:  # Python < 3.6: no is_async field
++                clause = ast.comprehension(
++                    target, ast.Name(pairs_res.id, ast.Load()), list(ifs)
++                )
++            return ast.ListComp(elt, [clause])
++
++        values_res = self.assign(
++            make_listcomp(ast.Name(res_var, ast.Load()), [])
++        )
++        res = self.assign(ast_Call(self.builtin(call.func.id), [values_res], []))
++        res_expl = self.explanation_param(self.display(res))
++        values_expl = self.explanation_param(self.display(values_res))
++        if is_all:
++            # the items for which the element value was falsy
++            detail = make_listcomp(
++                ast.Name(item_var, ast.Load()),
++                [ast.UnaryOp(ast.Not(), ast.Name(res_var, ast.Load()))],
++            )
++            detail_label = "falsy items"
++        else:
++            # ``any`` only fails when no item has a truthy element value, so
++            # show the full item list
++            detail = make_listcomp(ast.Name(item_var, ast.Load()), [])
++            detail_label = "items"
++        detail_expl = self.explanation_param(self.display(detail))
++        expl = "%s\n{%s = %s(%s)\n{%s: %s\n}\n}" % (
++            res_expl,
++            res_expl,
++            call.func.id,
++            values_expl,
++            detail_label,
++            detail_expl,
++        )
++        return res, expl
++
+     def visit_Attribute(self, attr):
+         if not isinstance(attr.ctx, ast.Load):
+             return self.generic_visit(attr)
+diff --git a/testing/test_assertrewrite.py b/testing/test_assertrewrite.py
+index 87dada21..d6b3b800 100755
+--- a/testing/test_assertrewrite.py
++++ b/testing/test_assertrewrite.py
+@@ -525,6 +525,64 @@ class TestAssertionRewrite(object):
+  +  where False = g(**{'a': 2})"""
+         )
+ 
++    def test_all_any_unrolled(self):
++        """Unroll the iterable for all/any calls to get better reports (#5103)."""
++
++        def is_even(number):
++            return number % 2 == 0
++
++        ns = {"is_even": is_even}
++
++        def f():
++            even_stevens = [1, 3, 5]
++            assert all(is_even(number) for number in even_stevens)
++
++        assert (
++            getmsg(f, ns)
++            == """assert False
++ +  where False = all([False, False, False])
++ +    where falsy items: [1, 3, 5]"""
++        )
++
++        def f():
++            odd_stevens = [1, 3, 5]
++            assert any(is_even(number) for number in odd_stevens)
++
++        assert (
++            getmsg(f, ns)
++            == """assert False
++ +  where False = any([False, False, False])
++ +    where items: [1, 3, 5]"""
++        )
++
++        def f():
++            numbers = [1, 2, 3]
++            assert all([is_even(number) for number in numbers])
++
++        assert (
++            getmsg(f, ns)
++            == """assert False
++ +  where False = all([False, True, False])
++ +    where falsy items: [1, 3]"""
++        )
++
++        def f():
++            pairs = [(2, 1), (3, 4)]
++            assert all(a < b for a, b in pairs)
++
++        assert (
++            getmsg(f)
++            == """assert False
++ +  where False = all([False, True])
++ +    where falsy items: [(2, 1)]"""
++        )
++
++        def f():
++            numbers = [2, 4]
++            assert all(is_even(number) for number in numbers)
++
++        getmsg(f, ns, must_pass=True)
++
+     def test_attribute(self):
+         class X(object):
+             g = 3
+2026-09-10 18:50:46,909 - INFO - Eval script for pytest-dev__pytest-5103 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/pytest-dev__pytest-5103/eval.sh; copying to container...
+2026-09-10 18:51:15,512 - INFO - Test runtime: 28.55 seconds
+2026-09-10 18:51:15,518 - INFO - Test output for pytest-dev__pytest-5103 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/pytest-dev__pytest-5103/test_output.txt
+2026-09-10 18:51:15,559 - INFO - Git diff after:
+diff --git a/src/_pytest/assertion/rewrite.py b/src/_pytest/assertion/rewrite.py
+index 2903b899..5295beec 100755
+--- a/src/_pytest/assertion/rewrite.py
++++ b/src/_pytest/assertion/rewrite.py
+@@ -968,6 +968,9 @@ warn_explicit(
+         """
+         visit `ast.Call` nodes on Python3.5 and after
+         """
++        unrolled = self._unroll_all_any(call)
++        if unrolled is not None:
++            return unrolled
+         new_func, func_expl = self.visit(call.func)
+         arg_expls = []
+         new_args = []
+@@ -1001,6 +1004,9 @@ warn_explicit(
+         """
+         visit `ast.Call nodes on 3.4 and below`
+         """
++        unrolled = self._unroll_all_any(call)
++        if unrolled is not None:
++            return unrolled
+         new_func, func_expl = self.visit(call.func)
+         arg_expls = []
+         new_args = []
+@@ -1035,6 +1041,128 @@ warn_explicit(
+     else:
+         visit_Call = visit_Call_legacy
+ 
++    @staticmethod
++    def _comprehension_target_loads(target):
++        """Get Load expressions for the names bound by a comprehension target.
++
++        Returns a list with one expression per bound name (flattening tuple
++        and list targets), or None if the target binds anything we do not
++        know how to capture (e.g. a ``Starred`` entry).
++        """
++        if isinstance(target, ast.Name):
++            return [ast.Name(target.id, ast.Load())]
++        if isinstance(target, (ast.Tuple, ast.List)):
++            loads = []
++            for elt in target.elts:
++                elt_loads = AssertionRewriter._comprehension_target_loads(elt)
++                if elt_loads is None:
++                    return None
++                loads.extend(elt_loads)
++            return loads
++        return None
++
++    def _unroll_all_any(self, call):
++        """Rewrite ``all(<comprehension>)`` / ``any(<comprehension>)`` calls
++        so that the iterable is unrolled, giving useful failure messages.
++
++        ``assert all(pred(x) for x in xs)`` is rewritten to first evaluate an
++        equivalent list comprehension of ``(element value, x)`` pairs, e.g.::
++
++            @py_assert0 = [(pred(x), x) for x in xs]
++            @py_assert1 = all([value for value, item in @py_assert0])
++
++        On failure the explanation then shows the per-item values (as the
++        plain ``all(...)`` call would for a list comprehension) plus the
++        items for which the element value was falsy (for ``all``) or the full
++        item list (for ``any``), instead of an opaque generator repr.
++
++        Returns (result, explanation) if the call was handled, or None if
++        *call* is not an ``all``/``any`` call we know how to unroll, in which
++        case the caller should use the generic call handling.
++        """
++        if (
++            not isinstance(call.func, ast.Name)
++            or call.func.id not in ("all", "any")
++            or len(call.args) != 1
++            or call.keywords
++            or getattr(call, "starargs", None)
++            or getattr(call, "kwargs", None)
++            or not isinstance(
++                call.args[0], (ast.GeneratorExp, ast.ListComp, ast.SetComp)
++            )
++        ):
++            return None
++        comp = call.args[0]
++        loads = []
++        for gen in comp.generators:
++            gen_loads = self._comprehension_target_loads(gen.target)
++            if gen_loads is None:
++                return None
++            loads.extend(gen_loads)
++        if len(loads) == 1:
++            capture = loads[0]
++        else:
++            capture = ast.Tuple(loads, ast.Load())
++        is_all = call.func.id == "all"
++        # Evaluate the comprehension once, as a list of (element value,
++        # item(s)) pairs, so per-item information is available for the failure
++        # message. Generator/set comprehensions are turned into equivalent
++        # list comprehensions; this materializes the whole iterable (same as
++        # ``all``/``any`` do when they don't short-circuit).
++        pairs = ast.ListComp(
++            ast.Tuple([comp.elt, capture], ast.Load()), comp.generators
++        )
++        pairs_res = self.assign(pairs)
++        res_var = self.variable()
++        item_var = self.variable()
++
++        def make_listcomp(elt, ifs):
++            target = ast.Tuple(
++                [ast.Name(res_var, ast.Store()), ast.Name(item_var, ast.Store())],
++                ast.Store(),
++            )
++            try:
++                clause = ast.comprehension(
++                    target,
++                    ast.Name(pairs_res.id, ast.Load()),
++                    list(ifs),
++                    0,
++                )
++            except TypeError:  # Python < 3.6: no is_async field
++                clause = ast.comprehension(
++                    target, ast.Name(pairs_res.id, ast.Load()), list(ifs)
++                )
++            return ast.ListComp(elt, [clause])
++
++        values_res = self.assign(
++            make_listcomp(ast.Name(res_var, ast.Load()), [])
++        )
++        res = self.assign(ast_Call(self.builtin(call.func.id), [values_res], []))
++        res_expl = self.explanation_param(self.display(res))
++        values_expl = self.explanation_param(self.display(values_res))
++        if is_all:
++            # the items for which the element value was falsy
++            detail = make_listcomp(
++                ast.Name(item_var, ast.Load()),
++                [ast.UnaryOp(ast.Not(), ast.Name(res_var, ast.Load()))],
++            )
++            detail_label = "falsy items"
++        else:
++            # ``any`` only fails when no item has a truthy element value, so
++            # show the full item list
++            detail = make_listcomp(ast.Name(item_var, ast.Load()), [])
++            detail_label = "items"
++        detail_expl = self.explanation_param(self.display(detail))
++        expl = "%s\n{%s = %s(%s)\n{%s: %s\n}\n}" % (
++            res_expl,
++            res_expl,
++            call.func.id,
++            values_expl,
++            detail_label,
++            detail_expl,
++        )
++        return res, expl
++
+     def visit_Attribute(self, attr):
+         if not isinstance(attr.ctx, ast.Load):
+             return self.generic_visit(attr)
+2026-09-10 18:51:15,559 - INFO - Git diff changed after running eval script
+2026-09-10 18:51:15,560 - INFO - Grading answer for pytest-dev__pytest-5103...
+2026-09-10 18:51:15,567 - INFO - report: {'pytest-dev__pytest-5103': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['testing/test_assertrewrite.py::TestAssertionRewrite::test_unroll_expression']}, 'PASS_TO_PASS': {'success': ['testing/test_assertrewrite.py::TestAssertionRewrite::test_place_initial_imports', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_dont_rewrite', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_name', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_dont_rewrite_if_hasattr_fails', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assert_already_has_message', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_boolop', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_short_circuit_evaluation', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_unary_op', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_binary_op', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_boolop_percent', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_call', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_attribute', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_comparisons', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_len', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_custom_reprcompare', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assert_raising_nonzero_in_comparison', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_formatchar', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_custom_repr', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_custom_repr_non_ascii', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_read_pyc', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_dont_rewrite_plugin', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message_multiline', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message_tuple', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message_expr', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_message_escape', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_assertion_messages_bytes', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_at_operator_issue1290', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_starred_with_side_effect', 'testing/test_assertrewrite.py::TestAssertionRewrite::test_for_loop', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_pycache_is_a_file', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_pycache_is_readonly', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_zipfile', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_readonly', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_dont_write_bytecode', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_orphaned_pyc_file', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_pyc_vs_pyo', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_package', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_translate_newlines', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_package_without__init__py', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_rewrite_warning', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_rewrite_module_imported_from_conftest', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_remember_rewritten_modules', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_rewrite_warning_using_pytest_plugins', 'testing/test_assertrewrite.py::TestRewriteOnImport::test_rewrite_warning_using_pytest_plugins_env_var', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_loader_is_package_false_for_module', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_loader_is_package_true_for_package', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_sys_meta_path_munged', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_write_pyc', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_resources_provider_for_loader', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_reload_is_same', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_reload_reloads', 'testing/test_assertrewrite.py::TestAssertionRewriteHookDetails::test_get_data_support', 'testing/test_assertrewrite.py::test_issue731', 'testing/test_assertrewrite.py::TestIssue925::test_simple_case', 'testing/test_assertrewrite.py::TestIssue925::test_long_case', 'testing/test_assertrewrite.py::TestIssue925::test_many_brackets', 'testing/test_assertrewrite.py::TestIssue2121::test_rewrite_python_files_contain_subdirs', 'testing/test_assertrewrite.py::test_source_mtime_long_long[-1]', 'testing/test_assertrewrite.py::test_source_mtime_long_long[1]', 'testing/test_assertrewrite.py::test_rewrite_infinite_recursion', 'testing/test_assertrewrite.py::TestEarlyRewriteBailout::test_basic', 'testing/test_assertrewrite.py::TestEarlyRewriteBailout::test_pattern_contains_subdirectories', 'testing/test_assertrewrite.py::TestEarlyRewriteBailout::test_cwd_changed'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for pytest-dev__pytest-5103: resolved: False
+2026-09-10 18:51:15,570 - INFO - Attempting to stop container sweb.eval.pytest-dev__pytest-5103.tonight...
+2026-09-10 18:51:32,793 - INFO - Container sweb.eval.pytest-dev__pytest-5103.tonight stopped successfully.
+2026-09-10 18:51:32,794 - INFO - Attempting to remove container sweb.eval.pytest-dev__pytest-5103.tonight...
+2026-09-10 18:51:32,942 - INFO - Container sweb.eval.pytest-dev__pytest-5103.tonight removed successfully.

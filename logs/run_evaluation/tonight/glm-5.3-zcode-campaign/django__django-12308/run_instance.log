@@ -1,0 +1,85 @@
+2026-09-10 18:20:39,811 - INFO - Image not found locally, attempting to pull...
+2026-09-10 18:23:43,135 - INFO - Creating container for django__django-12308...
+2026-09-10 18:23:43,372 - INFO - Container for django__django-12308 created: fc8c2464c99f53bad71974d530d8eb50554f4064739fedc554bfc38f22cab22d
+2026-09-10 18:23:43,517 - INFO - Container for django__django-12308 started: fc8c2464c99f53bad71974d530d8eb50554f4064739fedc554bfc38f22cab22d
+2026-09-10 18:23:43,521 - INFO - Intermediate patch for django__django-12308 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-12308/patch.diff, now applying to container...
+2026-09-10 18:23:43,617 - INFO - >>>>> Applied Patch:
+Checking patch django/contrib/admin/utils.py...
+warning: django/contrib/admin/utils.py has type 100755, expected 100644
+Checking patch django/db/models/fields/json.py...
+warning: django/db/models/fields/json.py has type 100755, expected 100644
+Applied patch django/contrib/admin/utils.py cleanly.
+Applied patch django/db/models/fields/json.py cleanly.
+
+2026-09-10 18:23:44,416 - INFO - Git diff before:
+diff --git a/django/contrib/admin/utils.py b/django/contrib/admin/utils.py
+index e4ddc8f017..cf6b041265 100755
+--- a/django/contrib/admin/utils.py
++++ b/django/contrib/admin/utils.py
+@@ -398,6 +398,10 @@ def display_for_field(value, field, empty_value_display):
+         return formats.number_format(value)
+     elif isinstance(field, models.FileField) and value:
+         return format_html('<a href="{}">{}</a>', value.url, value)
++    elif isinstance(field, models.JSONField):
++        # Render valid JSON (via prepare_value, which also passes through
++        # InvalidJSONInput untouched) instead of the Python repr.
++        return field.prepare_value(value)
+     else:
+         return display_for_value(value, empty_value_display)
+ 
+diff --git a/django/db/models/fields/json.py b/django/db/models/fields/json.py
+index edc5441799..8019a80e94 100755
+--- a/django/db/models/fields/json.py
++++ b/django/db/models/fields/json.py
+@@ -85,6 +85,10 @@ class JSONField(CheckFieldDefaultMixin, Field):
+             return value
+         return json.dumps(value, cls=self.encoder)
+ 
++    def prepare_value(self, value):
++        # Display valid JSON (e.g. in the admin) instead of the Python repr.
++        return json.dumps(value, cls=self.encoder)
++
+     def get_transform(self, name):
+         transform = super().get_transform(name)
+         if transform:
+2026-09-10 18:23:44,420 - INFO - Eval script for django__django-12308 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-12308/eval.sh; copying to container...
+2026-09-10 18:23:50,969 - INFO - Test runtime: 6.50 seconds
+2026-09-10 18:23:50,981 - INFO - Test output for django__django-12308 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-12308/test_output.txt
+2026-09-10 18:23:51,026 - INFO - Git diff after:
+diff --git a/django/contrib/admin/utils.py b/django/contrib/admin/utils.py
+index e4ddc8f017..cf6b041265 100755
+--- a/django/contrib/admin/utils.py
++++ b/django/contrib/admin/utils.py
+@@ -398,6 +398,10 @@ def display_for_field(value, field, empty_value_display):
+         return formats.number_format(value)
+     elif isinstance(field, models.FileField) and value:
+         return format_html('<a href="{}">{}</a>', value.url, value)
++    elif isinstance(field, models.JSONField):
++        # Render valid JSON (via prepare_value, which also passes through
++        # InvalidJSONInput untouched) instead of the Python repr.
++        return field.prepare_value(value)
+     else:
+         return display_for_value(value, empty_value_display)
+ 
+diff --git a/django/db/models/fields/json.py b/django/db/models/fields/json.py
+index edc5441799..8019a80e94 100755
+--- a/django/db/models/fields/json.py
++++ b/django/db/models/fields/json.py
+@@ -85,6 +85,10 @@ class JSONField(CheckFieldDefaultMixin, Field):
+             return value
+         return json.dumps(value, cls=self.encoder)
+ 
++    def prepare_value(self, value):
++        # Display valid JSON (e.g. in the admin) instead of the Python repr.
++        return json.dumps(value, cls=self.encoder)
++
+     def get_transform(self, name):
+         transform = super().get_transform(name)
+         if transform:
+2026-09-10 18:23:51,027 - INFO - Grading answer for django__django-12308...
+2026-09-10 18:23:51,041 - INFO - report: {'django__django-12308': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': False, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': [], 'failure': ['test_json_display_for_field (admin_utils.tests.UtilsTests)', 'test_label_for_field (admin_utils.tests.UtilsTests)']}, 'PASS_TO_PASS': {'success': ['test_cyclic (admin_utils.tests.NestedObjectsTests)', 'test_non_added_parent (admin_utils.tests.NestedObjectsTests)', 'test_on_delete_do_nothing (admin_utils.tests.NestedObjectsTests)', 'test_queries (admin_utils.tests.NestedObjectsTests)', 'test_relation_on_abstract (admin_utils.tests.NestedObjectsTests)', 'test_siblings (admin_utils.tests.NestedObjectsTests)', 'test_unrelated_roots (admin_utils.tests.NestedObjectsTests)', 'test_flatten (admin_utils.tests.UtilsTests)', 'test_flatten_fieldsets (admin_utils.tests.UtilsTests)', 'test_label_for_field_form_argument (admin_utils.tests.UtilsTests)', 'test_label_for_property (admin_utils.tests.UtilsTests)', 'test_list_display_for_value (admin_utils.tests.UtilsTests)', 'test_list_display_for_value_boolean (admin_utils.tests.UtilsTests)', 'test_null_display_for_field (admin_utils.tests.UtilsTests)', 'test_number_formats_display_for_field (admin_utils.tests.UtilsTests)', 'test_number_formats_with_thousand_separator_display_for_field (admin_utils.tests.UtilsTests)', 'test_quote (admin_utils.tests.UtilsTests)', 'test_related_name (admin_utils.tests.UtilsTests)', 'test_safestring_in_field_label (admin_utils.tests.UtilsTests)', 'test_values_from_lookup_field (admin_utils.tests.UtilsTests)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-12308: resolved: False
+2026-09-10 18:23:51,044 - INFO - Attempting to stop container sweb.eval.django__django-12308.tonight...
+2026-09-10 18:24:08,568 - INFO - Container sweb.eval.django__django-12308.tonight stopped successfully.
+2026-09-10 18:24:08,568 - INFO - Attempting to remove container sweb.eval.django__django-12308.tonight...
+2026-09-10 18:24:08,694 - INFO - Container sweb.eval.django__django-12308.tonight removed successfully.

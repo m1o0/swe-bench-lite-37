@@ -1,0 +1,134 @@
+2026-09-10 18:42:10,002 - INFO - Image not found locally, attempting to pull...
+2026-09-10 18:54:11,651 - INFO - Creating container for django__django-12915...
+2026-09-10 18:54:11,862 - INFO - Container for django__django-12915 created: 749ce9b93532ec7def25ffc845d1c96a18b3578932b9100eaabc32322b4d653c
+2026-09-10 18:54:12,055 - INFO - Container for django__django-12915 started: 749ce9b93532ec7def25ffc845d1c96a18b3578932b9100eaabc32322b4d653c
+2026-09-10 18:54:12,059 - INFO - Intermediate patch for django__django-12915 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-12915/patch.diff, now applying to container...
+2026-09-10 18:54:12,220 - INFO - >>>>> Applied Patch:
+Checking patch django/contrib/staticfiles/handlers.py...
+warning: django/contrib/staticfiles/handlers.py has type 100755, expected 100644
+Applied patch django/contrib/staticfiles/handlers.py cleanly.
+
+2026-09-10 18:54:15,045 - INFO - Git diff before:
+diff --git a/django/contrib/staticfiles/handlers.py b/django/contrib/staticfiles/handlers.py
+index 711d8864ad..9db4d33b33 100755
+--- a/django/contrib/staticfiles/handlers.py
++++ b/django/contrib/staticfiles/handlers.py
+@@ -52,6 +52,12 @@ class StaticFilesHandlerMixin:
+         except Http404 as e:
+             return response_for_exception(request, e)
+ 
++    async def get_response_async(self, request):
++        try:
++            return self.serve(request)
++        except Http404 as e:
++            return response_for_exception(request, e)
++
+ 
+ class StaticFilesHandler(StaticFilesHandlerMixin, WSGIHandler):
+     """
+2026-09-10 18:54:15,049 - INFO - Eval script for django__django-12915 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-12915/eval.sh; copying to container...
+2026-09-10 18:54:29,121 - INFO - Test runtime: 14.01 seconds
+2026-09-10 18:54:29,144 - INFO - Test output for django__django-12915 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-12915/test_output.txt
+2026-09-10 18:54:29,195 - INFO - Git diff after:
+diff --git a/django/contrib/staticfiles/handlers.py b/django/contrib/staticfiles/handlers.py
+index 711d8864ad..9db4d33b33 100755
+--- a/django/contrib/staticfiles/handlers.py
++++ b/django/contrib/staticfiles/handlers.py
+@@ -52,6 +52,12 @@ class StaticFilesHandlerMixin:
+         except Http404 as e:
+             return response_for_exception(request, e)
+ 
++    async def get_response_async(self, request):
++        try:
++            return self.serve(request)
++        except Http404 as e:
++            return response_for_exception(request, e)
++
+ 
+ class StaticFilesHandler(StaticFilesHandlerMixin, WSGIHandler):
+     """
+diff --git a/tests/asgi/tests.py b/tests/asgi/tests.py
+index 41b39ec9ea..2ec493085e 100755
+--- a/tests/asgi/tests.py
++++ b/tests/asgi/tests.py
+@@ -1,18 +1,25 @@
+ import asyncio
+ import sys
+ import threading
++from pathlib import Path
+ from unittest import skipIf
+ 
+ from asgiref.sync import SyncToAsync
+ from asgiref.testing import ApplicationCommunicator
+ 
++from django.contrib.staticfiles.handlers import ASGIStaticFilesHandler
+ from django.core.asgi import get_asgi_application
+ from django.core.signals import request_finished, request_started
+ from django.db import close_old_connections
+-from django.test import AsyncRequestFactory, SimpleTestCase, override_settings
++from django.test import (
++    AsyncRequestFactory, SimpleTestCase, modify_settings, override_settings,
++)
++from django.utils.http import http_date
+ 
+ from .urls import test_filename
+ 
++TEST_STATIC_ROOT = Path(__file__).parent / 'project' / 'static'
++
+ 
+ @skipIf(sys.platform == 'win32' and (3, 8, 0) < sys.version_info < (3, 8, 1), 'https://bugs.python.org/issue38563')
+ @override_settings(ROOT_URLCONF='asgi.urls')
+@@ -79,6 +86,45 @@ class ASGITest(SimpleTestCase):
+         # Allow response.close() to finish.
+         await communicator.wait()
+ 
++    @modify_settings(INSTALLED_APPS={'append': 'django.contrib.staticfiles'})
++    @override_settings(
++        STATIC_URL='/static/',
++        STATIC_ROOT=TEST_STATIC_ROOT,
++        STATICFILES_DIRS=[TEST_STATIC_ROOT],
++        STATICFILES_FINDERS=[
++            'django.contrib.staticfiles.finders.FileSystemFinder',
++        ],
++    )
++    async def test_static_file_response(self):
++        application = ASGIStaticFilesHandler(get_asgi_application())
++        # Construct HTTP request.
++        scope = self.async_request_factory._base_scope(path='/static/file.txt')
++        communicator = ApplicationCommunicator(application, scope)
++        await communicator.send_input({'type': 'http.request'})
++        # Get the file content.
++        file_path = TEST_STATIC_ROOT / 'file.txt'
++        with open(file_path, 'rb') as test_file:
++            test_file_contents = test_file.read()
++        # Read the response.
++        stat = file_path.stat()
++        response_start = await communicator.receive_output()
++        self.assertEqual(response_start['type'], 'http.response.start')
++        self.assertEqual(response_start['status'], 200)
++        self.assertEqual(
++            set(response_start['headers']),
++            {
++                (b'Content-Length', str(len(test_file_contents)).encode('ascii')),
++                (b'Content-Type', b'text/plain'),
++                (b'Content-Disposition', b'inline; filename="file.txt"'),
++                (b'Last-Modified', http_date(stat.st_mtime).encode('ascii')),
++            },
++        )
++        response_body = await communicator.receive_output()
++        self.assertEqual(response_body['type'], 'http.response.body')
++        self.assertEqual(response_body['body'], test_file_contents)
++        # Allow response.close() to finish.
++        await communicator.wait()
++
+     async def test_headers(self):
+         application = get_asgi_application()
+         communicator = ApplicationCommunicator(
+2026-09-10 18:54:29,195 - INFO - Git diff changed after running eval script
+2026-09-10 18:54:29,196 - INFO - Grading answer for django__django-12915...
+2026-09-10 18:54:29,219 - INFO - report: {'django__django-12915': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_get_async_response (staticfiles_tests.test_handlers.TestASGIStaticFilesHandler)', 'test_get_async_response_not_found (staticfiles_tests.test_handlers.TestASGIStaticFilesHandler)', 'test_static_file_response (asgi.tests.ASGITest)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_disconnect (asgi.tests.ASGITest)', 'test_file_response (asgi.tests.ASGITest)', 'test_get_asgi_application (asgi.tests.ASGITest)', 'test_get_query_string (asgi.tests.ASGITest)', 'test_headers (asgi.tests.ASGITest)', 'test_non_unicode_query_string (asgi.tests.ASGITest)', 'test_request_lifecycle_signals_dispatched_with_thread_sensitive (asgi.tests.ASGITest)', 'test_wrong_connection_type (asgi.tests.ASGITest)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-12915: resolved: True
+2026-09-10 18:54:29,222 - INFO - Attempting to stop container sweb.eval.django__django-12915.tonight...
+2026-09-10 18:54:44,605 - INFO - Container sweb.eval.django__django-12915.tonight stopped successfully.
+2026-09-10 18:54:44,605 - INFO - Attempting to remove container sweb.eval.django__django-12915.tonight...
+2026-09-10 18:54:44,749 - INFO - Container sweb.eval.django__django-12915.tonight removed successfully.

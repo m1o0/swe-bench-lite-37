@@ -1,0 +1,46 @@
+2026-09-10 17:57:17,781 - INFO - Image not found locally, attempting to pull...
+2026-09-10 17:58:33,643 - INFO - Creating container for django__django-11179...
+2026-09-10 17:58:33,816 - INFO - Container for django__django-11179 created: 33538c5241ea676ae05edbfdfd113df43849e493bcfd3f0ffde8a35c6e1ea1de
+2026-09-10 17:58:33,951 - INFO - Container for django__django-11179 started: 33538c5241ea676ae05edbfdfd113df43849e493bcfd3f0ffde8a35c6e1ea1de
+2026-09-10 17:58:33,955 - INFO - Intermediate patch for django__django-11179 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-11179/patch.diff, now applying to container...
+2026-09-10 17:58:34,045 - INFO - >>>>> Applied Patch:
+Checking patch django/db/models/deletion.py...
+warning: django/db/models/deletion.py has type 100755, expected 100644
+Applied patch django/db/models/deletion.py cleanly.
+
+2026-09-10 17:58:34,646 - INFO - Git diff before:
+diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py
+index 92fe4affb9..3a462f1c4c 100755
+--- a/django/db/models/deletion.py
++++ b/django/db/models/deletion.py
+@@ -277,6 +277,7 @@ class Collector:
+             if self.can_fast_delete(instance):
+                 with transaction.mark_for_rollback_on_error():
+                     count = sql.DeleteQuery(model).delete_batch([instance.pk], self.using)
++                setattr(instance, model._meta.pk.attname, None)
+                 return count, {model._meta.label: count}
+ 
+         with transaction.atomic(using=self.using, savepoint=False):
+2026-09-10 17:58:34,650 - INFO - Eval script for django__django-11179 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-11179/eval.sh; copying to container...
+2026-09-10 17:58:43,511 - INFO - Test runtime: 8.82 seconds
+2026-09-10 17:58:43,523 - INFO - Test output for django__django-11179 written to logs/run_evaluation/tonight/glm-5.3-zcode-campaign/django__django-11179/test_output.txt
+2026-09-10 17:58:43,564 - INFO - Git diff after:
+diff --git a/django/db/models/deletion.py b/django/db/models/deletion.py
+index 92fe4affb9..3a462f1c4c 100755
+--- a/django/db/models/deletion.py
++++ b/django/db/models/deletion.py
+@@ -277,6 +277,7 @@ class Collector:
+             if self.can_fast_delete(instance):
+                 with transaction.mark_for_rollback_on_error():
+                     count = sql.DeleteQuery(model).delete_batch([instance.pk], self.using)
++                setattr(instance, model._meta.pk.attname, None)
+                 return count, {model._meta.label: count}
+ 
+         with transaction.atomic(using=self.using, savepoint=False):
+2026-09-10 17:58:43,564 - INFO - Grading answer for django__django-11179...
+2026-09-10 17:58:43,577 - INFO - report: {'django__django-11179': {'patch_is_None': False, 'patch_exists': True, 'patch_successfully_applied': True, 'resolved': True, 'infra_failure': False, 'tests_status': {'FAIL_TO_PASS': {'success': ['test_fast_delete_instance_set_pk_none (delete.tests.FastDeleteTests)'], 'failure': []}, 'PASS_TO_PASS': {'success': ['test_fast_delete_empty_no_update_can_self_select (delete.tests.FastDeleteTests)', 'test_fast_delete_fk (delete.tests.FastDeleteTests)', 'test_fast_delete_inheritance (delete.tests.FastDeleteTests)', 'test_fast_delete_joined_qs (delete.tests.FastDeleteTests)', 'test_fast_delete_large_batch (delete.tests.FastDeleteTests)', 'test_fast_delete_m2m (delete.tests.FastDeleteTests)', 'test_fast_delete_qs (delete.tests.FastDeleteTests)', 'test_fast_delete_revm2m (delete.tests.FastDeleteTests)', 'test_auto (delete.tests.OnDeleteTests)', 'test_auto_nullable (delete.tests.OnDeleteTests)', 'test_cascade (delete.tests.OnDeleteTests)', 'test_cascade_from_child (delete.tests.OnDeleteTests)', 'test_cascade_from_parent (delete.tests.OnDeleteTests)', 'test_cascade_nullable (delete.tests.OnDeleteTests)', 'test_do_nothing (delete.tests.OnDeleteTests)', 'test_do_nothing_qscount (delete.tests.OnDeleteTests)', 'test_inheritance_cascade_down (delete.tests.OnDeleteTests)', 'test_inheritance_cascade_up (delete.tests.OnDeleteTests)', 'test_o2o_setnull (delete.tests.OnDeleteTests)', 'test_protect (delete.tests.OnDeleteTests)', 'test_setdefault (delete.tests.OnDeleteTests)', 'test_setdefault_none (delete.tests.OnDeleteTests)', 'test_setnull (delete.tests.OnDeleteTests)', 'test_setnull_from_child (delete.tests.OnDeleteTests)', 'test_setnull_from_parent (delete.tests.OnDeleteTests)', 'test_setvalue (delete.tests.OnDeleteTests)', 'test_bulk (delete.tests.DeletionTests)', 'test_can_defer_constraint_checks (delete.tests.DeletionTests)', 'test_delete_with_keeping_parents (delete.tests.DeletionTests)', 'test_delete_with_keeping_parents_relationships (delete.tests.DeletionTests)', 'test_deletion_order (delete.tests.DeletionTests)', 'test_hidden_related (delete.tests.DeletionTests)', 'test_instance_update (delete.tests.DeletionTests)', 'test_large_delete (delete.tests.DeletionTests)', 'test_large_delete_related (delete.tests.DeletionTests)', 'test_m2m (delete.tests.DeletionTests)', 'test_model_delete_returns_num_rows (delete.tests.DeletionTests)', 'test_proxied_model_duplicate_queries (delete.tests.DeletionTests)', 'test_queryset_delete_returns_num_rows (delete.tests.DeletionTests)', 'test_relational_post_delete_signals_happen_before_parent_object (delete.tests.DeletionTests)'], 'failure': []}, 'FAIL_TO_FAIL': {'success': [], 'failure': []}, 'PASS_TO_FAIL': {'success': [], 'failure': []}}}}
+Result for django__django-11179: resolved: True
+2026-09-10 17:58:43,580 - INFO - Attempting to stop container sweb.eval.django__django-11179.tonight...
+2026-09-10 17:58:58,943 - INFO - Container sweb.eval.django__django-11179.tonight stopped successfully.
+2026-09-10 17:58:58,944 - INFO - Attempting to remove container sweb.eval.django__django-11179.tonight...
+2026-09-10 17:58:59,067 - INFO - Container sweb.eval.django__django-11179.tonight removed successfully.
